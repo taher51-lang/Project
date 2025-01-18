@@ -1,17 +1,18 @@
 import java.util.Scanner;
-class Main12 {
-    boolean login(String username,String pass,Members obj){
-        if(username.equalsIgnoreCase(obj.name)&&pass.equals(obj.defaultpass)){
-            return true;
-        }
-        else{
-            System.out.println("Enter correct Username/Password");
-            return false;
+
+public class library {}
+    class Main12 {
+        boolean login(String username, String pass, Members obj){
+            if(username.equalsIgnoreCase(obj.name)&&pass.equals(obj.defaultpass)){
+                return true;
+            }
+            else{
+                System.out.println("Enter correct Username/Password");
+                return false;
+            }
         }
     }
-}
-
-public class librarian {}
+    
     class Reader {
 
     }
@@ -27,7 +28,7 @@ public class librarian {}
         }
     }
     class Members {
-    Scanner sc = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in);
         String name,defaultpass;
         int penalty,id;
         Members(){
@@ -59,7 +60,7 @@ public class librarian {}
                     break;
                 }
                 else {attempt++;
-                     continue;
+                    continue;
                 }
             }
             if(loginStat){
@@ -67,6 +68,8 @@ public class librarian {}
             }
         }
     }
+
+
 
 
 
