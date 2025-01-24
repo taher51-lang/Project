@@ -28,15 +28,22 @@ import java.util.Scanner;
                 System.out.print(array[i].bookName+" "+array[i].bookId);
                 System.out.println(array[i].bookauhtor);}
             }
-            System.out.println("Kindly enter the book id You want to read");
-            byte userBookId = sc.nextByte();
-            if(availibility(userBookId,array)){
-                System.out.println("This Book has been issued to you");
+        }
+        boolean MaxPossesion(int id,Members array[]){
+            if(array[id-1].bookInPossision[2].isEmpty()){
+                return true;
+            }
+            else {
+                System.out.println("You have Maximum no of books. Kindly return a book then proceed");
+                return false;
             }
         }
-        boolean availibility(int userinput,Books array[]){//Stock availibilty
-            if(array[userinput-1].current_Stock>0){
-                array[userinput-1].current_Stock-=1;
+        boolean availibility(Books array[],Members array2[],int memId){//Stock availibilty
+            System.out.println("Kindly enter the book id You want to read");
+            byte userBookId = sc.nextByte();
+            if(array[userBookId-1].current_Stock>0&&MaxPossesion(memId,array2)){
+                array[userBookId-1].current_Stock-=1;
+                array2[memId-1].bookInPossision[0]=array[userBookId-1].bookName;//To be improvised:Increasing the no o possededbooks;
                 return true;
             }
             else
@@ -46,6 +53,7 @@ import java.util.Scanner;
     class Members extends library{
         Scanner sc = new Scanner(System.in);
         String name,defaultpass;
+        String bookInPossision[] = new String[3];
         int penalty,id;
         Members(){
             System.out.println("Enter Name");
@@ -75,9 +83,14 @@ import java.util.Scanner;
                         int attempt = 0;
                         boolean loginStat = false;
                         library callobj = new library();
+                        System.out.println("Enter your id");
+                        byte memId = sc.nextByte();
+                        sc.nextLine();
                         while (true) {//Login
-                            System.out.println("Enter Your name , pass and id respectively");
-                            if (callobj.login(sc.nextLine(), sc.nextLine(), members[sc.nextInt() - 1])) {
+                            System.out.println( "Enter your name and pass respectively");
+                            String memName = sc.nextLine();
+                            String pass = sc.nextLine();
+                            if (callobj.login(memName, pass, members[memId - 1])) {
                                 System.out.println("Login Success");
                                 loginStat = true;
                                 break;
@@ -93,12 +106,18 @@ import java.util.Scanner;
                             System.out.println("1.Fiction\n2.Horror\nPhysocological");
                             byte userGenre = sc.nextByte();
                             switch (userGenre){
-                                case 1:callBook.displayBooks(books,"Fiction");break;
-                                case 2:callBook.displayBooks(books,"Horror");break;
-                                case 3:callBook.displayBooks(books,"Physocological");break;
+                                case 1:callBook.displayBooks(books,"Fiction");//Code to be improvised.!!Add bookname;
+                                       if(callBook.availibility(books,members,memId)){
+                                           System.out.println("Book has been Issued to you");}break;
+                                case 2:callBook.displayBooks(books,"Horror");
+                                    if(callBook.availibility(books,members,memId)){
+                                        System.out.println("Book has been Issued to you");}break;
+                                case 3:callBook.displayBooks(books,"Physocological");
+                                    if(callBook.availibility(books,members,memId)){
+                                        System.out.println("Book has been Issued to you");}break;
                             }
                             System.out.println("Happy Reading");
-                            callBook.displayBooks(books,"Fiction");
+
                             //code continues here;
                         }
                     }
