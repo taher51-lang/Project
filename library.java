@@ -31,7 +31,7 @@ import java.util.Scanner;
         }
         boolean MaxPossesion(int id,Members array[]){
             if(array[id-1].bookInPossesion[2].equals("")&&array[id-1].bookcounter<=3){
-                return true;
+                return true;//insert a delete method SOMEHOW!!
             }
             else {
                 System.out.println("You have Maximum no of books. Kindly return a book then proceed");
@@ -66,7 +66,7 @@ import java.util.Scanner;
             for(int i =0;i< array.length;i++){
                 if(array[i].name.isEmpty()){
                     array[i].name=name;
-                    array[i].defaultpass=pass; System.out.println("Your Id is "+i);break;
+                    array[i].defaultpass=pass; System.out.println("Your Id is "+(i+1));break;
                 }
                 else
                     if(i+1==array.length)
@@ -88,7 +88,8 @@ import java.util.Scanner;
                 array[UserBook-1].current_Stock++;
                 memarray[id-1].bookInPossesion[serialno-1]="";
                 memarray[id-1].bookId[serialno-1]=0;
-                System.out.println("Your book has been Succesfully returned");//Validate
+                System.out.println("Your book has been Succesfully returned");
+                memarray[id-1].bookcounter--;//Validate
                 // Id of book
             }
 
@@ -151,7 +152,7 @@ import java.util.Scanner;
                 books[i].bookName=horrorBooks[k];
                 books[i].Genre="Horror";
                 books[i].bookauhtor=horrorAuthors[k];
-            }for(int i=20,k=0;i<30;i++,k++){
+            }for(int i=30,k=0;i<40;i++,k++){
                 books[i].bookName=businessCaseStudiesBooks[k];
                 books[i].Genre="Business Case Studies";
                 books[i].bookauhtor=businessCaseStudiesAuthors[k];
@@ -163,11 +164,10 @@ import java.util.Scanner;
             System.out.println("Type Reader if you are a reader and librarian if you are a librarian");
             String userType = sc.nextLine();
             int type = userType.equalsIgnoreCase("Reader") ? 1 : 2;
-            while(true){
+            while(true)
             switch (type) {
                 case 1:
                     System.out.println("Are you an existing member of library?Yes/No");
-                    sc.nextLine();
                     String userClass = sc.nextLine();
                     if (userClass.equalsIgnoreCase("Yes")) {
                         int attempt = 0;
@@ -192,6 +192,7 @@ import java.util.Scanner;
                             }
                         }
                         if (loginStat) {
+                            while (true){
                             System.out.println("Select your preferred Genre of Books:");
                             System.out.println("1.Fiction\n2.Horror\n.3." +
                                     "Physocological");
@@ -230,13 +231,13 @@ import java.util.Scanner;
                                         System.out.println("Book has been Issued to you");
                                     }
                             }
-
                             System.out.println("Happy Reading");
                             callObj.dispayandReturn(books,members,memId);
                             System.out.println("do you Want to continue Reading Books?Yes/No");
+                            sc.nextLine();
                             String input1 = sc.nextLine();
                             if(input1.equalsIgnoreCase("yes")){continue;}
-                            else break;
+                            else break;}
                             //code continues here;
                         }
                     } else {//registering a new member
@@ -246,14 +247,11 @@ import java.util.Scanner;
                         String name = sc.nextLine();
                         String pass = sc.nextLine();
                         callObj.newMember(members, name, pass);
-
                         continue;
                     }
                     break;
-                    //Member operations end
+                    //Member operations end//delete book remains
                 case 2:
-            }
-
             }
         }
     }
