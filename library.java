@@ -11,7 +11,51 @@ import java.util.Scanner;
             }
         }
     }
-    class Librarian {
+    class Librarian extends library{
+       String defaultpass = "HiHello";
+       String name = "Taher";
+       boolean LibLogin(String name,String pass){
+           if(name.equalsIgnoreCase(this.name)&&defaultpass.equalsIgnoreCase(pass)){
+               return true;
+           }
+           else
+               return false;
+       }
+       void displaymMemberDetails(Members obj){
+           System.out.println("Name of member: "+obj.name);
+           System.out.println("Currently Holds "+obj.bookcounter+" books");
+           for(int i =0;i<3;i++){
+               System.out.println(obj.bookInPossesion[i]+" BookId :"+obj.bookId[i]);
+           }
+       }
+       void RemoveBook(Books array[]){
+           System.out.println("Enter The Book id You want to remove");
+       }
+        void displayBooks(Books array[]){
+            for(int i=0;i< array.length;i++){
+                    System.out.print(array[i].bookId+"."+array[i].bookName);
+                    System.out.println(" "+"Author: "+array[i].bookauhtor);}
+
+        }
+       void reviewAndUpdate(Books book[]){
+           displayBooks(book);
+           System.out.println("Enter The Book Id you want to see/update");
+           short k = sc.nextShort();
+           System.out.println(book[k-1].bookName+" "+book[k-1].Genre+" Current Stock"+book[k-1].current_Stock);
+           System.out.println("Enter The updated Stock ");
+           book[k-1].current_Stock= sc.nextByte();
+       }
+       void addBook(Books book[]){
+           System.out.println("Enter The name,genre,author,stock of book respectively");
+           for(int i=0;i<book.length;i++){
+               if(book[i].bookName==null){
+                   book[i].bookName=sc.nextLine();
+                   book[i].Genre=sc.nextLine();
+                   book[i].bookauhtor=sc.nextLine();
+                   book[i].current_Stock=sc.nextByte();break;
+               }
+           }
+       }
     }
     class Books extends library  {
         String bookName,bookauhtor,Genre;
@@ -92,20 +136,17 @@ import java.util.Scanner;
                 memarray[id-1].bookcounter--;//Validate
                 // Id of book
             }
-
-
         }
     }
     class Run123 {
 
-           static byte userBookId=0;
+       static byte userBookId=0;
         public static void main(String args[]) {
-
-            Run123 callRun = new Run123();
             Scanner sc = new Scanner(System.in);
             Books books[] = new Books[50];
             Books callBook = new Books(1);
             Members callObj = new Members(2);
+            Librarian librarian = new Librarian();
             for (int i = 0; i < books.length; i++) {//provides the array of books
                 books[i] = new Books();
             }
@@ -252,6 +293,35 @@ import java.util.Scanner;
                     break;
                     //Member operations end//delete book remains
                 case 2:
+                    boolean k = false;
+                    while (true){
+                        String name = sc.nextLine();
+                        String pass = sc.nextLine();
+                        if(librarian.LibLogin(name,pass)){
+                            k=true;break;
+                        }
+                        else{
+                            System.out.println("Enter Proper credentials");
+                        }}
+                        if(k){
+                    System.out.println("What Action do you want to Perform:");
+                            System.out.println("1. Show Member Details.");
+                            System.out.println("2. Show book data and update.");
+                            System.out.println("3. Add a book.");
+                            System.out.println("4. Remove  a book.");}
+                        int choice = sc.nextInt();
+                        switch(choice){
+                            case 1 :
+                                System.out.println("Enter the id of member you want to see details of");
+                                int id = sc.nextByte();
+                                librarian.displaymMemberDetails(members[id-1]);break;
+                            case 2:
+                                librarian.reviewAndUpdate(books);break;
+                            case 3:
+                                librarian.addBook(books);break;
+                            case 4:
+                                librarian.RemoveBook(books);break;
+                        }
             }
         }
     }
