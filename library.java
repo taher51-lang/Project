@@ -15,7 +15,7 @@ import java.util.Scanner;
        String defaultpass = "taher123";
        String name = "Taher";
        boolean LibLogin(String name,String pass){
-           if(name.equalsIgnoreCase(this.name)&&defaultpass.equalsIgnoreCase(pass)){
+           if(name.equalsIgnoreCase(this.name)&&defaultpass.equals(pass)){
                return true;
            }
            else
@@ -336,7 +336,7 @@ import java.util.Scanner;
                                 break;
                             case 4:
                                 librarian.RemoveBook(books);
-                                break;
+                                break;//add search method!!!!!!!!
                         }
                 }
             }
