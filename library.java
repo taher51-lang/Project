@@ -12,8 +12,8 @@ import java.util.Scanner;
         }
     }//Add Default Member names and Design the code properly!!
     class Librarian extends library{
-       String defaultpass = "taher123";
-       String name = "Taher";
+       String defaultpass = "admin123";
+       String name = "admin";
        boolean LibLogin(String name,String pass){
            if(name.equalsIgnoreCase(this.name)&&defaultpass.equals(pass)){
                return true;
@@ -127,17 +127,31 @@ import java.util.Scanner;
             }
             System.out.println("---Would You like to return any of these books? If yes Type 1, anything else if you don't want so---");
             String s = sc.nextLine();
-            if(s.equalsIgnoreCase("yes")){
+            if(s.equalsIgnoreCase("1")){
                 System.out.println("---Enter the ID and serial no of book you want to return--");
-                byte UserBook = sc.nextByte();//insert validation!!
+                byte UserBook = sc.nextByte();// validation!!
                 byte serialno = sc.nextByte();
+                if(memarray[id-1].validate(UserBook)){
                 array[UserBook-1].current_Stock++;
                 memarray[id-1].bookInPossession[serialno-1]="";
                 memarray[id-1].bookId[serialno-1]=0;
                 System.out.println("-Your book has been Succesfully returned-");
-                memarray[id-1].bookcounter--;//Validate
-                // Id of book
+                memarray[id-1].bookcounter--;}
+                else
+                    System.out.println("You do not have such book");
+
             }
+        }
+        boolean validate(byte b){
+            boolean a = true;
+            for(int i =0;i< bookId.length;i++){
+                if(bookId[i]==b){
+                    return a;}
+                else{
+                    a=false;
+                }
+            }
+            return a;
         }
     }
     class Run123 {
@@ -146,7 +160,7 @@ import java.util.Scanner;
         public static void main(String args[]) {
             System.out.println("-----------Welcome To Galaxy Library------------");
             Scanner sc = new Scanner(System.in);
-            Books books[] = new Books[50];
+            Books books[] = new Books[60];
             Books callBook = new Books(1);
             Members callObj = new Members();
             Librarian librarian = new Librarian();
@@ -183,7 +197,30 @@ import java.util.Scanner;
                     "Leslie Berlin",
                     "A.G. Lafley and Roger Martin"
             };
-
+            String[] uniqueClassicNovels = {
+                    "The Great Gatsby",
+                    "Brave New World",
+                    "The Catcher in the Rye",
+                    "Wuthering Heights",
+                    "One Hundred Years of Solitude",
+                    "The Count of Monte Cristo",
+                    "The Picture of Dorian Gray",
+                    "Anna Karenina",
+                    "The Brothers Karamazov",
+                    "Frankenstein"
+            };
+            String[] authorsClssicalNovels = {
+                    "F. Scott Fitzgerald",
+                    "Aldous Huxley",
+                    "J.D. Salinger",
+                    "Emily Brontë",
+                    "Gabriel García Márquez",
+                    "Alexandre Dumas",
+                    "Oscar Wilde",
+                    "Leo Tolstoy",
+                    "Fyodor Dostoevsky",
+                    "Mary Shelley"
+            };
             for(int i=0;i<10;i++){
                 books[i].bookName=fictionBooks[i];
                 books[i].Genre="Fiction";
@@ -200,6 +237,10 @@ import java.util.Scanner;
                 books[i].bookName=businessCaseStudiesBooks[k];
                 books[i].Genre="Business Case Studies";
                 books[i].bookauhtor=businessCaseStudiesAuthors[k];
+            }for(int i=40,k=0;i<50;i++,k++){
+                books[i].bookName=uniqueClassicNovels[k];
+                books[i].Genre="Classical Novels";
+                books[i].bookauhtor=authorsClssicalNovels[k];
             }
             String defaultMembers[] = {"Taher","Parth","Meet","Yash","Nitin"};
             Members members[] = new Members[10];//Provides the array of members
@@ -277,6 +318,17 @@ import java.util.Scanner;
                                             if (callBook.availibility(books, members, memId, userBookId)) {
                                                 System.out.println("Book has been Issued to you");
                                             }
+                                            break;
+                                        case 5:
+                                            callBook.displayBooks(books,"Classical Novels");
+                                            System.out.println("Kindly enter the book id You want to read");
+                                            userBookId = sc.nextByte();
+                                            if (callBook.availibility(books, members, memId, userBookId)) {
+                                                System.out.println("Book has been Issued to you");
+                                            }
+                                            break;
+                                        default:
+                                            System.out.println("Enter available genre Books"); break;
                                     }
                                     System.out.println("Happy Reading");
                                     callObj.displayandReturn(books, members, memId);
@@ -300,7 +352,7 @@ import java.util.Scanner;
                         }
 
                         break;
-                    //Member operations end//delete book remains
+                    //Member operations end
                     case 2:
                         boolean k;
                         while (true) {
@@ -336,7 +388,7 @@ import java.util.Scanner;
                                 break;
                             case 4:
                                 librarian.RemoveBook(books);
-                                break;//add search method!!!!!!!!
+                                break;
                         }
                 }
             }
