@@ -14,8 +14,8 @@ import java.util.Scanner;
     class Librarian extends library{
        String defaultpass = "admin123";
        String name = "admin";
-       boolean LibLogin(String name,String pass){
-           if(name.equalsIgnoreCase(this.name)&&defaultpass.equals(pass)){
+       boolean LibLogin(String name1,String pass){
+           if(name.equalsIgnoreCase(name1)&&defaultpass.equals(pass)){
                return true;
            }
            else
@@ -289,7 +289,7 @@ import java.util.Scanner;
                                         case 1:
                                             callBook.displayBooks(books, "Fiction");
                                             System.out.println("Kindly enter the book id You want to read");
-                                            userBookId = sc.nextByte();//Code to be improvised.!!Add bookname;
+                                            userBookId = sc.nextByte();
                                             System.out.println(userBookId);
                                             if (callBook.availibility(books, members, memId, userBookId)) {
                                                 System.out.println("Book has been Issued to you");
@@ -357,6 +357,7 @@ import java.util.Scanner;
                         boolean k;
                         while (true) {
                             System.out.println("---Please Enter Your Name and pass---");
+                            sc.nextLine();
                             String name = sc.nextLine();
                             String pass = sc.nextLine();
                             if (librarian.LibLogin(name, pass)) {
@@ -366,29 +367,34 @@ import java.util.Scanner;
                                 System.out.println("Enter Proper credentials");
                             }
                         }
-                        if (k) {
-                            System.out.println("What Action do you want to Perform:");
-                            System.out.println("1. Show Member Details.");
-                            System.out.println("2. Show book data and update.");
-                            System.out.println("3. Add a book.");
-                            System.out.println("4. Remove  a book.");
-                        }
-                        int choice = sc.nextInt();
-                        switch (choice) {
-                            case 1:
-                                System.out.println("Enter the id of member you want to see details of");
-                                byte id = sc.nextByte();
-                                librarian.displayMemberDetails(members[id - 1]);
-                                break;
-                            case 2:
-                                librarian.reviewAndUpdate(books);
-                                break;
-                            case 3:
-                                librarian.addBook(books);
-                                break;
-                            case 4:
-                                librarian.RemoveBook(books);
-                                break;
+                        boolean h = true;
+                        while(h) {
+                            if (k) {
+                                System.out.println("What Action do you want to Perform:");
+                                System.out.println("1. Show Member Details.");
+                                System.out.println("2. Show book data and update.");
+                                System.out.println("3. Add a book.");
+                                System.out.println("4. Remove  a book.");
+                                System.out.println("5.Exit");
+                            }
+                            int choice = sc.nextInt();
+                            switch (choice) {
+                                case 1:
+                                    System.out.println("Enter the id of member you want to see details of");
+                                    byte id = sc.nextByte();
+                                    librarian.displayMemberDetails(members[id - 1]);
+                                    break;
+                                case 2:
+                                    librarian.reviewAndUpdate(books);
+                                    break;
+                                case 3:
+                                    librarian.addBook(books);
+                                    break;
+                                case 4:
+                                    librarian.RemoveBook(books);
+                                    break;
+                                case 5: h=false;break;
+                            }
                         }
                 }
             }
