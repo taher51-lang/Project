@@ -24,7 +24,7 @@ import java.util.Scanner;
        void displayMemberDetails(Members obj){
            System.out.println("Name of member: "+obj.name);
            System.out.println("Currently Holds "+obj.bookcounter+" books");
-           for(int i =0;i<3;i++){
+           for(int i =0;i<3&&obj.bookId[i]!=0;i++){
                System.out.println(obj.bookInPossession[i]+" BookId :"+obj.bookId[i]);
            }
        }
@@ -94,8 +94,9 @@ import java.util.Scanner;
                 array2[memId-1].bookcounter++;
                 return true;
             }
-            else
-                return false;
+            else{
+                System.out.println("Book is not available right now. Kindly check after some time.");
+                return false;}
         }
     }
     class Members extends library{
@@ -154,7 +155,6 @@ import java.util.Scanner;
         }
     }
     class Run123 {
-
        static byte userBookId=0;
         public static void main(String args[]) {
             System.out.println("-----------Welcome To Galaxy Library------------");
@@ -224,19 +224,23 @@ import java.util.Scanner;
                 books[i].bookName=fictionBooks[i];
                 books[i].Genre="Fiction";
                 books[i].bookauhtor=fictionAuthors[i];
-            }for(int i=10,k=0;i<20;i++,k++){
+            }
+            for(int i=10,k=0;i<20;i++,k++){
                 books[i].bookName=psychologicalBooks[k];
                 books[i].Genre="Physocological";
                 books[i].bookauhtor=psychologicalAuthors[k];
-            }for(int i=20,k=0;i<30;i++,k++){
+            }
+            for(int i=20,k=0;i<30;i++,k++){
                 books[i].bookName=horrorBooks[k];
                 books[i].Genre="Horror";
                 books[i].bookauhtor=horrorAuthors[k];
-            }for(int i=30,k=0;i<40;i++,k++){
+            }
+            for(int i=30,k=0;i<40;i++,k++){
                 books[i].bookName=businessCaseStudiesBooks[k];
                 books[i].Genre="Business Case Studies";
                 books[i].bookauhtor=businessCaseStudiesAuthors[k];
-            }for(int i=40,k=0;i<50;i++,k++){
+            }
+            for(int i=40,k=0;i<50;i++,k++){
                 books[i].bookName=uniqueClassicNovels[k];
                 books[i].Genre="Classical Novels";
                 books[i].bookauhtor=authorsClssicalNovels[k];
@@ -245,13 +249,15 @@ import java.util.Scanner;
             Members members[] = new Members[10];//Provides the array of members
             for (int i = 0; i < members.length; i++) {
                 members[i] = new Members();
-            } for (int i = 0; i < defaultMembers.length; i++) {
+            }
+            for (int i = 0; i < defaultMembers.length; i++) {
                 members[i].name = defaultMembers[i];
                 members[i].defaultpass=members[i].name+"123";
             }
-            while(true) {
+            boolean loop1 = true,loop2=false;
+            while(loop1) {
                 System.out.println("---Enter 1 if you are a reader and 2 if you are a librarian---");
-                byte type = sc.nextByte();
+                byte type = sc.nextByte();loop2=true;
                 switch (type) {
                     case 1:
                         System.out.println("Are you an existing member of library? type yes if you are a member else press any key");
@@ -334,7 +340,7 @@ import java.util.Scanner;
                                     }}
                                     System.out.println("Happy Reading");
                                     callObj.displayandReturn(books, members, memId);
-                                    System.out.println("do you Want to continue Reading Books?Yes/No");
+                                    System.out.println("do you Want to continue Reading Books?Type yes if you wish to continue else press any key");
                                     sc.nextLine();
                                     String input1 = sc.nextLine();
                                     if (input1.equalsIgnoreCase("yes")) {
@@ -352,14 +358,15 @@ import java.util.Scanner;
                             callObj.newMember(members, name, pass);
                             continue;
                         }
-
                         break;
                     //Member operations end
                     case 2:
-                        boolean k;
+                        boolean k; int attempt=0;
                         while (true) {
+                            attempt++;
                             System.out.println("---Please Enter Your Name----");
-                            sc.nextLine();
+                            if(attempt<=1){
+                            sc.nextLine();}
                             String name = sc.nextLine();
                             System.out.println("----Please Enter your password----");
                             String pass = sc.nextLine();
@@ -398,13 +405,18 @@ import java.util.Scanner;
                                     break;
                                 case 5: h=false;break;
                                 default:
-                                    System.out.println("Enter available choices");
+                                    System.out.println("Enter available choices");break;
                             }
 
-                        }
+                        }break;
                     default :
-                        System.out.println("Enter between 1 or 2");
+                        System.out.println("Enter between 1 or 2");loop2=false;break;
                 }
+                if(loop2){
+                System.out.println("Type 1 to exit program and any other number to continue on login page");
+                byte input = sc.nextByte();
+                if(input==1)
+                   loop1=false;}
             }
         }
     }
