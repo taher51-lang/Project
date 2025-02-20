@@ -106,8 +106,7 @@ import java.util.Scanner;
         Members(){
             name="";
         }
-        void newMember(Members array[],String name,String pass){
-            int counter;
+        void newMember(Members array[],String name,String pass){;
             for(int i =0;i< array.length;i++){
                 if(array[i].name.equals("")){
                     array[i].name=name;
@@ -123,13 +122,13 @@ import java.util.Scanner;
             for(int i =0;i<3;i++){
                 if(memarray[id-1].bookId[i]!=0){
                 System.out.print((i+1)+". Name of Book: "+memarray[id-1].bookInPossession[i]);
-                System.out.println(" Id of book is "+memarray[id-1].bookId[i]);}
+                System.out.println(". Id of book is "+memarray[id-1].bookId[i]);}
             }
-            System.out.println("---Would You like to return any of these books? If yes Type 1, anything else if you don't want so---");
-            String s = sc.nextLine();
-            if(s.equalsIgnoreCase("1")){
+            System.out.println("---Would You like to return any of these books? If yes Type 1, any other number if you don't wish to return");
+            int s = sc.nextInt();
+            if(s==1){
                 System.out.println("---Enter the ID and serial no of book you want to return--");
-                byte UserBook = sc.nextByte();// validation!!
+                byte UserBook = sc.nextByte();//
                 byte serialno = sc.nextByte();
                 if(memarray[id-1].validate(UserBook)){
                 array[UserBook-1].current_Stock++;
@@ -255,7 +254,7 @@ import java.util.Scanner;
                 byte type = sc.nextByte();
                 switch (type) {
                     case 1:
-                        System.out.println("Are you an existing member of library?Yes/No");
+                        System.out.println("Are you an existing member of library? type yes if you are a member else press any key");
                         sc.nextLine();
                         String userClass = sc.nextLine();
                         if (userClass.equalsIgnoreCase("Yes")) {
@@ -266,8 +265,9 @@ import java.util.Scanner;
                             byte memId = sc.nextByte();
                             sc.nextLine();
                             while (true) {//Login
-                                System.out.println("Enter your name and pass respectively");
+                                System.out.println("Enter your name");
                                 String memName = sc.nextLine();
+                                System.out.println("Enter your password");
                                 String pass = sc.nextLine();
                                 if (callobj.login(memName, pass, members[memId - 1])) {
                                     System.out.println("Login Success");
@@ -282,9 +282,11 @@ import java.util.Scanner;
                             }
                             if (loginStat) {
                                 while (true) {
-                                    System.out.println("Select your preferred Genre of Books:");
-                                    System.out.println("1.Fiction\n2.Horror\n3.Psychological\n4.Business Administration\n5.Classical Novels");
-                                    byte userGenre = sc.nextByte();
+                                    boolean j = true;
+                                    while(j){
+                                        System.out.println("Select your preferred Genre of Books:");
+                                        System.out.println("1.Fiction\n2.Horror\n3.Psychological\n4.Business Administration\n5.Classical Novels");
+                                        byte userGenre = sc.nextByte();
                                     switch (userGenre) {
                                         case 1:
                                             callBook.displayBooks(books, "Fiction");
@@ -292,7 +294,7 @@ import java.util.Scanner;
                                             userBookId = sc.nextByte();
                                             System.out.println(userBookId);
                                             if (callBook.availibility(books, members, memId, userBookId)) {
-                                                System.out.println("Book has been Issued to you");
+                                                System.out.println("Book has been Issued to you");j=false;
                                             }
                                             break;
                                         case 2:
@@ -300,7 +302,7 @@ import java.util.Scanner;
                                             System.out.println("Kindly enter the book id You want to read");
                                             userBookId = sc.nextByte();
                                             if (callBook.availibility(books, members, memId, userBookId)) {
-                                                System.out.println("Book has been Issued to you");
+                                                System.out.println("Book has been Issued to you");j=false;
                                             }
                                             break;
                                         case 3:
@@ -308,7 +310,7 @@ import java.util.Scanner;
                                             System.out.println("Kindly enter the book id You want to read");
                                             userBookId = sc.nextByte();
                                             if (callBook.availibility(books, members, memId, userBookId)) {
-                                                System.out.println("Book has been Issued to you");
+                                                System.out.println("Book has been Issued to you");j=false;
                                             }
                                             break;
                                         case 4:
@@ -316,7 +318,7 @@ import java.util.Scanner;
                                             System.out.println("Kindly enter the book id You want to read");
                                             userBookId = sc.nextByte();
                                             if (callBook.availibility(books, members, memId, userBookId)) {
-                                                System.out.println("Book has been Issued to you");
+                                                System.out.println("Book has been Issued to you");j=false;
                                             }
                                             break;
                                         case 5:
@@ -324,12 +326,12 @@ import java.util.Scanner;
                                             System.out.println("Kindly enter the book id You want to read");
                                             userBookId = sc.nextByte();
                                             if (callBook.availibility(books, members, memId, userBookId)) {
-                                                System.out.println("Book has been Issued to you");
+                                                System.out.println("Book has been Issued to you");j=false;
                                             }
                                             break;
                                         default:
                                             System.out.println("Enter available genre Books"); break;
-                                    }
+                                    }}
                                     System.out.println("Happy Reading");
                                     callObj.displayandReturn(books, members, memId);
                                     System.out.println("do you Want to continue Reading Books?Yes/No");
@@ -356,9 +358,10 @@ import java.util.Scanner;
                     case 2:
                         boolean k;
                         while (true) {
-                            System.out.println("---Please Enter Your Name and pass---");
+                            System.out.println("---Please Enter Your Name----");
                             sc.nextLine();
                             String name = sc.nextLine();
+                            System.out.println("----Please Enter your password----");
                             String pass = sc.nextLine();
                             if (librarian.LibLogin(name, pass)) {
                                 k = true;
@@ -394,8 +397,13 @@ import java.util.Scanner;
                                     librarian.RemoveBook(books);
                                     break;
                                 case 5: h=false;break;
+                                default:
+                                    System.out.println("Enter available choices");
                             }
+
                         }
+                    default :
+                        System.out.println("Enter between 1 or 2");
                 }
             }
         }
