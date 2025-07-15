@@ -49,7 +49,34 @@ public class Main {
     static boolean login(){
         return true;
     }
-    static void registration(){}
+    static void registration(){
+        System.out.println("----Follow the steps to register yourself ");
+        System.out.println("Enter your name");sc.nextLine();
+        String Name = sc.nextLine();
+        System.out.println("Create a username for your profile");
+        String username = sc.next();
+        System.out.println("Create new password");
+        String pass = sc.next();
+        System.out.println("Enter your mobile No(It must start with 8  or 9");
+        long mobileNo;
+        boolean temp=true;
+        while (temp){
+           try{
+                mobileNo=sc.nextLong();
+                if(mobileNo<=9999999999L&&mobileNo>7999999999L){
+                    temp=false;
+                }else{
+                    System.out.println("invalid input");
+                }
+            }
+           catch (RuntimeException e) {
+               System.out.println("Enter numeric input");
+               sc.nextLine();
+           }
+        }
+        System.out.println("Enter your email address");
+        String email_id = sc.next();
+    }
     public static void main(String[] args) throws Exception {
 //        String driverName = "com.mysql.cj.jdbc.Driver";
 //        Class.forName(driverName);
@@ -78,7 +105,7 @@ class User{
     String password;
     Long MobileNo;
     String email_id;
-    String fullName;
+    String Name;
     public void regitration(){}
 
     public void setEmail_id(String email_id) {
