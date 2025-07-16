@@ -1,11 +1,13 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
 public class Main {
     static Scanner sc = new Scanner(System.in);
-    static void roleIdentification(){
+
+    static void roleIdentification() throws SQLException, ClassNotFoundException {
         System.out.println("---Kindly choose your specific role");
         System.out.println("---1.User");
         System.out.println("---2.Admin");
@@ -49,7 +51,7 @@ public class Main {
     static boolean login(){
         return true;
     }
-    static void registration(){
+    static void registration() throws ClassNotFoundException, SQLException {
         System.out.println("----Follow the steps to register yourself ");
         System.out.println("Enter your name");sc.nextLine();
         String Name = sc.nextLine();
@@ -58,7 +60,7 @@ public class Main {
         System.out.println("Create new password");
         String pass = sc.next();
         System.out.println("Enter your mobile No(It must start with 8  or 9");
-        long mobileNo;
+        long mobileNo = 0;
         boolean temp=true;
         while (temp){
            try{
@@ -76,26 +78,20 @@ public class Main {
         }
         System.out.println("Enter your email address");
         String email_id = sc.next();
+        String driverName = "com.mysql.cj.jdbc.Driver";
+        Class.forName(driverName);
+        System.out.println("Driver installed");
+        String dbUrl = "jdbc:mysql://localhost:3306/Project";
+        String dbUser = "root";
+        String dpPass = "";
+        Connection con = DriverManager.getConnection(dbUrl,dbUser,dpPass);
+        Statement st = con.createStatement();
+        Scanner sc = new Scanner(System.in);
+        String sql1 = "insert into user(user_name,Name,mobileNo,email_id,user_pass) values('"+Name+"','"+username+"',"+mobileNo+",'"+email_id+"','"+pass+"')";
+        int r = st.executeUpdate(sql1);
+
     }
     public static void main(String[] args) throws Exception {
-//        String driverName = "com.mysql.cj.jdbc.Driver";
-//        Class.forName(driverName);
-//        System.out.println("Driver installed");
-//        String dbUrl = "jdbc:mysql://localhost:3306/Project";
-//        String dbUser = "root";
-//        String dpPass = "";
-//        Connection con = DriverManager.getConnection(dbUrl,dbUser,dpPass);
-//        if(con!=null)
-//            System.out.println("Cnnection sucess");
-//        else
-//            System.out.println("Connection unsuccessful");
-//        Statement st = con.createStatement();
-//        Scanner sc = new Scanner(System.in);
-////        String sql1 = "insert into user values(1,'Taher',9173337452,'rangwalataher@gmail.com','taher123')";
-////        int r = st.executeUpdate(sql1);
-////        if(r>0)
-////            System.out.println("Inserted"); Dummy values
-//        //The inauguration of my code:
         System.out.println("Welcome to the lost and found Managment System ");
         roleIdentification();
     }
