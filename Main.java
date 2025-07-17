@@ -6,14 +6,16 @@ import java.util.Scanner;
 
 public class Main {
     static Scanner sc = new Scanner(System.in);
-    static void roleIdentification() throws SQLException, ClassNotFoundException {
+    static boolean roleIdentification() throws SQLException, ClassNotFoundException {
+        boolean adminOrUser = true;
         System.out.println("---Kindly choose your specific role");
         System.out.println("---1.User");
         System.out.println("---2.Admin");
         int role = 0;
         try {
             role = Integer.parseInt(sc.next());
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             System.out.println("---Kindly enter proper numeric input---");
             roleIdentification();
         }
@@ -39,18 +41,19 @@ public class Main {
                             System.out.println("Enter proper digit");break;
                     }
                 }
+                ;
                 break;
-            case 2: break;
+            case 2: adminOrUser=false;break;
             default:
                 System.out.println("Enter 1 or 2 in accordance to your role");
                 roleIdentification();
                 break;
         }
+        return adminOrUser;
     }
     static boolean login(){
         return true;
     }
-
     public static void main(String[] args) throws Exception {
         System.out.println("Welcome to the lost and found Managment System ");
         roleIdentification();
@@ -66,9 +69,9 @@ class User{
     static void registration() throws ClassNotFoundException, SQLException {
         System.out.println("----Follow the steps to register yourself ");
         System.out.println("Enter your name");
-        String Name = sc.nextLine();
+        String Name = sc.nextLine();//Code to be made more readable and maintable using getemail,getname etc
         System.out.println("Create a username for your profile");
-        String username = sc.next();
+        String username = sc.next();//Make sure this username has not been taken already
         System.out.println("Create new password");
         String pass = sc.next();
         System.out.println("Enter your mobile No(It must start with 8  or 9");
