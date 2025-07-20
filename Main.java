@@ -1,9 +1,9 @@
 import java.sql.*;
 import java.util.Scanner;
-
 public class Main {
     static Connection con;
     static Scanner sc = new Scanner(System.in);
+    static Item lost;
     static boolean roleIdentification() throws SQLException, ClassNotFoundException {
         boolean adminOrUser = true;
         System.out.println("---Kindly choose your specific role");
@@ -12,7 +12,6 @@ public class Main {
         int role = 0;
         Class.forName("com.mysql.cj.jdbc.Driver");
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
-
         try {
             role = Integer.parseInt(sc.next());
         }
@@ -77,7 +76,6 @@ public class Main {
         return false;
     }
     static Item Lost() throws SQLException {
-        Item lost;
         System.out.println("Kindly enter the category in which your lost item fits: ");
         System.out.println("1.Electronics & Gadgets\n" +
                 "(Mobile phones, tablets, laptops, cameras, chargers, earphones etc)\n" +"\n"+
@@ -113,9 +111,10 @@ public class Main {
         }
         System.out.println("Enter The area in which your Item has been lost");
         switch (choice){
-            case 1:Item e = new Electronics();
-]
-
+            case 1:Electronics e = new Electronics();
+            e.setDetails();
+            lost= e;break;
+            case 2:
         }
         return lost;
     }
@@ -266,7 +265,7 @@ class Accessories extends Item{
     }
 }
 class Documents extends Item{
-//Define
+//Define q
 }
 class FinancialDocs extends Item{
 
