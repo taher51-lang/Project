@@ -266,7 +266,7 @@ class Accessories extends Item{
     }
 }
 class Documents extends Item{
-//Defin
+//Define
 }
 class FinancialDocs extends Item{
 
