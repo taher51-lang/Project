@@ -41,6 +41,7 @@ public class Main {
                             if(circumstance.equalsIgnoreCase("lost")){
                                 Lost();
                             }
+                            temp = false;//Updates of User side dashboard to be made here
                             break;
                         case 2: User.registration();
                             temp=false;
@@ -66,7 +67,6 @@ public class Main {
         System.out.println("Enter your password");
         String pass= sc.next();
         String sql="Select name from user where user_Name='"+userName+"' and user_pass='"+pass+"'";
-
         Statement st= con.createStatement();
         ResultSet rs= st.executeQuery(sql);
         if(rs.next()){
@@ -77,6 +77,7 @@ public class Main {
         return false;
     }
     static Item Lost() throws SQLException {
+        Item lost;
         System.out.println("Kindly enter the category in which your lost item fits: ");
         System.out.println("1.Electronics & Gadgets\n" +
                 "(Mobile phones, tablets, laptops, cameras, chargers, earphones etc)\n" +"\n"+
@@ -112,10 +113,11 @@ public class Main {
         }
         System.out.println("Enter The area in which your Item has been lost");
         switch (choice){
-            case 1:
-
+            case 1:Item e = new Electronics();
+]
 
         }
+        return lost;
     }
     static void found(){
         System.out.println("Kindly Enter the details of the thing you have found as instructed");
@@ -135,6 +137,8 @@ public class Main {
     public static void main(String[] args) throws Exception {
         System.out.println("Welcome to the lost and found Managment System ");
         roleIdentification();
+        //User Login-User side function embedded in nested methods one after one in this method;
+
     }
 }
 class User{
@@ -190,87 +194,95 @@ class User{
     }
 }
 class Item {
-    Scanner sc=new Scanner(System.in);
+    Scanner sc = new Scanner(System.in);
     String name;
     String area;
     String date;
     String color;
     String brand;
     String attribute;
-    public Item( String name, String area, String date, String color, String brand, String attribute) {
-        this.name = name;
-        this.area = area;
-        this.date = date;
-        this.color = color;
-        this.brand = brand;
-        this.attribute = attribute;
+
+    public void setName() {
+
+        name = sc.nextLine();
     }
-    public String getName() {
-        return name;
+
+    public void setArea() {
+        System.out.println("Enter the area it might have lost");
+        area = sc.nextLine();
     }
-    public String getArea() {
-        return area;
+
+    public void setDate() {
+        System.out.println("Enter the date when it got lost");
+        try {
+            date = sc.nextLine();
+        } catch (Exception e) {
+            System.out.println("enter proper date");
+        }
     }
-    public String getDate() {
-        return date;
+
+    public void setColor() {
+        System.out.println("Enter the color of the lost thing");
+        color = sc.nextLine();
     }
-    public String getColor() {
-        return color;
+
+    public void setBrand() {
+        System.out.println("Enter the brand of the lost item if any");
+        brand = sc.nextLine();
     }
-    public String getBrand() {
-        return brand;
-    }
-    public String getAttribute() {
-        return attribute;
+
+    public void setAttribute() {
+        System.out.println("Describe any unique quality of your lost item that helps the system to validate its rightful owner");
+        attribute =sc.nextLine();
     }
 }
 class Electronics extends Item{
-    public Electronics(String name, String area, String date, String color, String brand, String attribute) {
-        super(name, area, date, color, brand, attribute);
-    }
+   String model;
+   public void setDetails(){
+       setName();setDate();setArea();setBrand();setColor();
+       System.out.println("Enter the model of the electronic device e.g(Dell series laptop:Inspiron 3511)");
+       model=sc.nextLine();
+       setAttribute();
+   }
 }
 class Bags extends Item{
-    public Bags(String name, String area, String date, String color, String brand, String attribute) {
-        super(name, area, date, color, brand, attribute);
-    }
+  String material;
+  public void setDetails(){
+      System.out.println("Enter the category of bag: e.g(shoulder bag,suitcase etc)");
+      setName();setDate();setArea();setBrand();setColor();
+      System.out.println("Enter the material of the lost bag");
+  }
 }
 class Accessories extends Item{
-    public Accessories(String name, String area, String date, String color, String brand, String attribute) {
-        super(name, area, date, color, brand, attribute);
+    String material;
+    String condition;
+    public void setDetails(){
+        System.out.println("Enter the type of Accessory you lost. e.g(Watch,cloth type(jacket,sweater) etc)");
+        setName();setDate();setBrand();setColor();
+        System.out.println("Enter the material of the lost item:(In one word)");
+        material= sc.next();
+        System.out.println("Enter the condition of the Item(new,old)(In one word):");
+        condition= sc.next();
     }
 }
 class Documents extends Item{
-    public Documents(String name, String area, String date, String color, String brand, String attribute) {
-        super(name, area, date, color, brand, attribute);
-    }
+//Defin
 }
 class FinancialDocs extends Item{
-    public FinancialDocs(String name, String area, String date, String color, String brand, String attribute) {
-        super(name, area, date, color, brand, attribute);
-    }
+
 }
 class AcademicSupplies extends Item{
-    public AcademicSupplies(String name, String area, String date, String color, String brand, String attribute) {
-        super(name, area, date, color, brand, attribute);
-    }
+
 }
 class EntertainmentsGears extends Item{
-    public EntertainmentsGears(String name, String area, String date, String color, String brand, String attribute) {
-        super(name, area, date, color, brand, attribute);
-    }
+
 }
 class ChildStuff extends Item {
-    public ChildStuff(String name, String area, String date, String color, String brand, String attribute) {
-        super(name, area, date, color, brand, attribute);
-    }
+
 }
 class eyeAndVision extends Item{
-    public eyeAndVision(String name, String area, String date, String color, String brand, String attribute) {
-        super(name, area, date, color, brand, attribute);
-    }
+
 }
 class Keys extends Item {
-    public Keys(String name, String area, String date, String color, String brand, String attribute) {
-        super(name, area, date, color, brand, attribute);
-    }
+
 }
