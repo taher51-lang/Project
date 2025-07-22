@@ -85,17 +85,15 @@ public class Main {
                 "(Jackets, scarves, gloves, caps, jewelry, watches)\n" +"\n"+
                 "\n4.Identity & Documents\n" +
                 "(ID cards, passports, licenses, student cards, certificates)\n" +"\n"+
-                "\n5.Financial Items\n" +
-                "(Wallets, purses, credit/debit cards, cash envelopes)\n" +"\n"+
-                "\n6.Academic Supplies\n" +
+                "\n5.Academic Supplies\n" +
                 "Books, notebooks, stationery, calculators\n" +"\n"+
-                "\n7.Hobby & Entertainment Gear\n" +"\n"+
+                "\n6.Hobby & Entertainment Gear\n" +"\n"+
                 "(Game consoles, musical instruments, sports equipment)\n" +"\n"+
-                "\n8.Children’s Belongings\n"+"\n"+
+                "\n.7Children’s Belongings\n"+"\n"+
                 "(Toys, lunch boxes, baby bags, pacifiers)\n" +
-                "\n Eyewear & Vision Aids\n" +"\n"+
+                "\n8.Eyewear & Vision Aids\n" +"\n"+
                 "(Glasses, sunglasses, contact lens kits)\n" +"\n"+
-                "\n Keys & Access Devices\n" +
+                "\n9.Keys & Access Devices\n" +
                 "\n"+"(House keys, car keys, RFID tags, access cards)");
         int choice = 0;
         boolean isValid = true;
@@ -114,7 +112,42 @@ public class Main {
             case 1:Electronics e = new Electronics();
             e.setDetails();
             lost= e;break;
-            case 2:
+            case 2:Bags a = new Bags();
+            a.setDetails();
+            lost=a;
+            break;
+            case 3: Accessories c = new Accessories();
+            c.setDetails();
+            lost=c;
+            break;
+            case 4:Documents d = new Documents();
+            d.setDetails();
+            lost=d;
+            break;
+            case 5:AcademicSupplies s = new AcademicSupplies();
+            s.setDetails();
+            lost=s;
+            break;
+            case 6:EntertainmentsGears eg = new EntertainmentsGears();
+            eg.setDetails();
+            lost=eg;
+            break;
+            case 7:ChildStuff cs = new ChildStuff();
+            cs.setDetails();
+            lost = cs;
+            break;
+            case 8:eyeAndVision ev = new eyeAndVision();
+            ev.setDetails();
+            lost=ev;
+            break;
+            case 9:Keys k = new Keys();
+            k.setDetails();
+            lost = k;
+            break;
+            default:
+                System.out.println("Kindly enter proper input");
+               Lost();
+               break;
         }
         return lost;
     }
@@ -198,11 +231,9 @@ class Item {
     String area;
     String date;
     String color;
-    String brand;
     String attribute;
 
     public void setName() {
-
         name = sc.nextLine();
     }
 
@@ -225,11 +256,6 @@ class Item {
         color = sc.nextLine();
     }
 
-    public void setBrand() {
-        System.out.println("Enter the brand of the lost item if any");
-        brand = sc.nextLine();
-    }
-
     public void setAttribute() {
         System.out.println("Describe any unique quality of your lost item that helps the system to validate its rightful owner");
         attribute =sc.nextLine();
@@ -237,6 +263,11 @@ class Item {
 }
 class Electronics extends Item{
    String model;
+   String brand;
+    public void setBrand() {
+        System.out.println("Enter the brand of the lost item if any");
+        brand = sc.nextLine();
+    }
    public void setDetails(){
        setName();setDate();setArea();setBrand();setColor();
        System.out.println("Enter the model of the electronic device e.g(Dell series laptop:Inspiron 3511)");
@@ -246,42 +277,131 @@ class Electronics extends Item{
 }
 class Bags extends Item{
   String material;
+    String brand;
+    public void setBrand() {
+        System.out.println("Enter the brand of the lost item if any");
+        brand = sc.nextLine();
+    }
   public void setDetails(){
       System.out.println("Enter the category of bag: e.g(shoulder bag,suitcase etc)");
       setName();setDate();setArea();setBrand();setColor();
       System.out.println("Enter the material of the lost bag");
+      material=sc.nextLine();
+      setAttribute();
   }
 }
 class Accessories extends Item{
+    String brand;
+    public void setBrand() {
+        System.out.println("Enter the brand of the lost item if any");
+        brand = sc.nextLine();
+    }
     String material;
     String condition;
     public void setDetails(){
         System.out.println("Enter the type of Accessory you lost. e.g(Watch,cloth type(jacket,sweater) etc)");
-        setName();setDate();setBrand();setColor();
+        setName();setDate();setArea();setBrand();setColor();
         System.out.println("Enter the material of the lost item:(In one word)");
         material= sc.next();
         System.out.println("Enter the condition of the Item(new,old)(In one word):");
         condition= sc.next();
+        setAttribute();
     }
 }
 class Documents extends Item{
-//Define q
+    String issueAuthority;
+    public void setDetails(){
+        System.out.println("Enter the name of Document you lost. e.g(Aadhar card,Pan card etc)");
+        setName();setDate();setArea();setColor();
+        System.out.println("Specify The issuing authority of the lost Document");
+        issueAuthority=sc.nextLine();
+        setAttribute();
+    }
 }
-class FinancialDocs extends Item{
+class AcademicSupplies extends Item {
+    String brand;
 
-}
-class AcademicSupplies extends Item{
+    public void setBrand() {
+        System.out.println("Enter the brand of the lost item if any");
+        brand = sc.nextLine();
+    }
 
+    public void setDetails() {
+        System.out.println("Enter the name of the lost item.e.g(Notebooks,Educational equipments)");
+        name = sc.nextLine();
+        setDate();
+        setArea();
+        setBrand();
+        setColor();
+        setAttribute();
+    }
 }
 class EntertainmentsGears extends Item{
-
+    String brand;
+    public void setBrand() {
+        System.out.println("Enter the brand of the lost item if any");
+        brand = sc.nextLine();
+    }
+    public void setDetails() {
+        System.out.println("Enter the name of the lost item.e.g(Musical Instruments,sports equipments)");
+        name = sc.nextLine();
+        setDate();
+        setArea();
+        setBrand();
+        setColor();
+        setAttribute();
+    }
 }
 class ChildStuff extends Item {
-
+    String brand;
+    public void setBrand() {
+        System.out.println("Enter the brand of the lost item if any");
+        brand = sc.nextLine();
+    }
+public void setDetails(){
+    System.out.println("Enter the name of the lost item.e.g(Baby stroller,Toys)");
+    name = sc.nextLine();
+    setDate();
+    setArea();
+    setBrand();
+    setColor();
+    setAttribute();
+}
 }
 class eyeAndVision extends Item{
-
+String FrameType;
+String lensGrade;
+    String brand;
+    public void setBrand() {
+        System.out.println("Enter the brand of the lost item if any");
+        brand = sc.nextLine();
+    }
+    public void setDetails(){
+        name = "lens";
+        setDate();setArea();setBrand();setColor();
+        System.out.println("Specify the Frame type of the lens(e.g Full rim,Half rim)");
+        FrameType=sc.nextLine();
+        System.out.println("Specify Lens Grade. e.g(Polymer,Glass)");
+        lensGrade=sc.nextLine();
+    }
 }
 class Keys extends Item {
+    String keyType;
+    String brand;
 
+    public void setBrand() {
+        System.out.println("Enter the brand of the lost key if any(Written on the key.)");
+        brand = sc.nextLine();
+    }
+
+    public void setDetails() {
+        name = "keys";
+        setDate();
+        setArea();
+        setBrand();
+        setColor();
+        System.out.println("Specify the type of key you have lost(Vehicle keys,Lock keys etc)");
+        keyType = sc.nextLine();
+        setAttribute();
+    }
 }
