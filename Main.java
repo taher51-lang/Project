@@ -1,5 +1,68 @@
 import java.sql.*;
 import java.util.Scanner;
+class Tree{
+    class Node{
+        Node right;
+        Node left;
+        String data;
+        Node(String data){
+            this.data = data;
+            left = null;
+            right = null;
+        }
+    }
+    Node root = null;
+    Boolean searchTree(String subject){
+        Node temp = root;
+        if(root==null)
+            return false;
+        else{
+            while (temp!=null){
+                int result = subject.compareTo(temp.data);
+                if(result==0)
+                    return true;
+                else if (result<0) {
+                    temp=temp.left;
+                }
+                else{
+                    temp=temp.right;
+                }
+            }
+        }
+        return false;
+    }
+    boolean insert(String subject){
+        Node n = new Node(subject);
+        if(root==null)
+            root=n;
+        else{
+            Node temp = root;
+            boolean duplicate = !searchTree(subject);
+            if(searchTree(subject)){
+                System.out.println("The username is already taken!! Kindly choose a different one");
+                return true;
+            }
+            while (duplicate&&temp!=null){
+                if(temp.left==null&&temp.data.compareTo(subject)<0){
+                    temp.left = n;
+                    return false;
+                }
+                else if(temp.right==null&&temp.data.compareTo(subject)>0){
+                    temp.right=n;
+                    return false;
+                }
+                else{
+                    if(subject.compareTo(temp.data)<0)
+                        temp=temp.left;
+                    else
+                        temp=temp.right;
+                }
+            }
+        }
+        return false;
+    }
+}
+
 public class Main {
     static Connection con;
     static Scanner sc = new Scanner(System.in);
@@ -34,7 +97,7 @@ public class Main {
                         case 1: while (!login()){
                             System.out.println("Incorrect userName or password");
                         }
-                            temp=false;
+
                             System.out.println("Enter whether you have lost Or found any thing");
                             String circumstance=sc.next();
                             if(circumstance.equalsIgnoreCase("lost")){
@@ -49,7 +112,7 @@ public class Main {
                             System.out.println("Enter proper digit");break;
                     }
                 }
-                ;
+
                 break;
             case 2: adminOrUser=false;break;
             default:
@@ -77,24 +140,44 @@ public class Main {
     }
     static Item Lost() throws SQLException {
         System.out.println("Kindly enter the category in which your lost item fits: ");
-        System.out.println("1.Electronics & Gadgets\n" +
-                "(Mobile phones, tablets, laptops, cameras, chargers, earphones etc)\n" +"\n"+
-                "\n2.Bags & Carriers\n" +
-                "(Suitcases, backpacks, laptop bags, tote bags)\n" +"\n"+
-                "\n3.Clothing & Accessories\n" +
-                "(Jackets, scarves, gloves, caps, jewelry, watches)\n" +"\n"+
-                "\n4.Identity & Documents\n" +
-                "(ID cards, passports, licenses, student cards, certificates)\n" +"\n"+
-                "\n5.Academic Supplies\n" +
-                "Books, notebooks, stationery, calculators\n" +"\n"+
-                "\n6.Hobby & Entertainment Gear\n" +"\n"+
-                "(Game consoles, musical instruments, sports equipment)\n" +"\n"+
-                "\n.7Children’s Belongings\n"+"\n"+
-                "(Toys, lunch boxes, baby bags, pacifiers)\n" +
-                "\n8.Eyewear & Vision Aids\n" +"\n"+
-                "(Glasses, sunglasses, contact lens kits)\n" +"\n"+
-                "\n9.Keys & Access Devices\n" +
-                "\n"+"(House keys, car keys, RFID tags, access cards)");
+        System.out.println("""
+                1.Electronics & Gadgets
+                (Mobile phones, tablets, laptops, cameras, chargers, earphones etc)
+                
+                
+                2.Bags & Carriers
+                (Suitcases, backpacks, laptop bags, tote bags)
+                
+                
+                3.Clothing & Accessories
+                (Jackets, scarves, gloves, caps, jewelry, watches)
+                
+                
+                4.Identity & Documents
+                (ID cards, passports, licenses, student cards, certificates)
+                
+                
+                5.Academic Supplies
+                Books, notebooks, stationery, calculators
+                
+                
+                6.Hobby & Entertainment Gear
+                
+                (Game consoles, musical instruments, sports equipment)
+                
+                
+                .7Children’s Belongings
+                
+                (Toys, lunch boxes, baby bags, pacifiers)
+                
+                8.Eyewear & Vision Aids
+                
+                (Glasses, sunglasses, contact lens kits)
+                
+                
+                9.Keys & Access Devices
+                
+                (House keys, car keys, RFID tags, access cards)""");
         int choice = 0;
         boolean isValid = true;
         while (isValid){
@@ -182,11 +265,30 @@ class User{
     String email_id;
     String Name;
     static void registration() throws ClassNotFoundException, SQLException {
+        String driverName = "com.mysql.cj.jdbc.Driver";
+        Class.forName(driverName);
+        System.out.println("Driver installed");
+        String dbUrl = "jdbc:mysql://localhost:3306/project"; //changed part
+        String dbUser = "root";
+        String dpPass = "";
+        con = DriverManager.getConnection(dbUrl,dbUser,dpPass);
+        Tree Users = new Tree();
+        String sql = "select user_name from user";
+        PreparedStatement pst = con.prepareStatement(sql);
+        ResultSet rs = pst.executeQuery();
+        while (rs.next()){
+            Users.insert(rs.getString(1));
+        }
         System.out.println("----Follow the steps to register yourself ");
         System.out.println("Enter your name");
         String Name = sc.nextLine();//Code to be made more readable and maintable using getemail,getname etc
         System.out.println("Create a username for your profile");
-        String username = sc.next();//Make sure this username has not been taken already
+        String username = sc.next();
+        while (Users.insert(username)){
+            username=sc.next();
+        }
+
+        //Make sure this username has not been taken already
         System.out.println("Create new password");
         String pass = sc.next();
         System.out.println("Enter your mobile No(It must start with 8  or 9)");
@@ -208,13 +310,6 @@ class User{
         }
         System.out.println("Enter your email address");
         String email_id = sc.next();
-        String driverName = "com.mysql.cj.jdbc.Driver";
-        Class.forName(driverName);
-        System.out.println("Driver installed");
-        String dbUrl = "jdbc:mysql://localhost:3306/project"; //changed part
-        String dbUser = "root";
-        String dpPass = "";
-        con = DriverManager.getConnection(dbUrl,dbUser,dpPass);
         Statement st = con.createStatement();
         Scanner sc = new Scanner(System.in);
         String sql1 = "insert into user(user_name,Name,mobileNo,email_id,user_pass) values('"+username+"','"+Name+"',"+mobileNo+",'"+email_id+"','"+pass+"')";
