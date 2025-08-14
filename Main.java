@@ -1,5 +1,9 @@
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.function.Function;
+
 class Tree{
     class Node{
         Node right;
@@ -139,7 +143,9 @@ public class Main {
         System.out.println("Enter whether you have lost Or found any thing");
         String circumstance=sc.next();
         if(circumstance.equalsIgnoreCase("lost")){
-            Lost();
+            Item subject = Lost();
+            DoublyLinkedList stage1 = search(subject);//Category filter
+            DoublyLinkedList stage2 = filterNameAndLocation(stage1);
         }
         else{
             found();
@@ -166,8 +172,7 @@ public class Main {
                 }
             }
     }
-    static Item Lost() throws SQLException {
-        System.out.println("Kindly enter the category in which your lost item fits: ");
+    public static void getItems(){
         System.out.println("""
                 1.Electronics & Gadgets
                 (Mobile phones, tablets, laptops, cameras, chargers, earphones etc)
@@ -206,6 +211,10 @@ public class Main {
                 9.Keys & Access Devices
                 
                 (House keys, car keys, RFID tags, access cards)""");
+    }
+    static Item Lost() throws SQLException {
+        System.out.println("Kindly enter the category in which your lost item fits: ");
+       getItems();
         int choice = 0;
         boolean isValid = true;
         while (isValid){
@@ -314,44 +323,7 @@ public class Main {
     static void found() throws SQLException {
         System.out.println("Kindly Enter the details of the thing you have found as instructed");
         System.out.println("Kindly enter the category in which item you found fits perfectly ");
-        System.out.println("""
-                1.Electronics & Gadgets
-                (Mobile phones, tablets, laptops, cameras, chargers, earphones etc)
-                
-                
-                2.Bags & Carriers
-                (Suitcases, backpacks, laptop bags, tote bags)
-                
-                
-                3.Clothing & Accessories
-                (Jackets, scarves, gloves, caps, jewelry, watches)
-                
-                
-                4.Identity & Documents
-                (ID cards, passports, licenses, student cards, certificates)
-                
-                
-                5.Academic Supplies
-                Books, notebooks, stationery, calculators
-                
-                
-                6.Hobby & Entertainment Gear
-                
-                (Game consoles, musical instruments, sports equipment)
-                
-                
-                .7Children’s Belongings
-                
-                (Toys, lunch boxes, baby bags, pacifiers)
-                
-                8.Eyewear & Vision Aids
-                
-                (Glasses, sunglasses, contact lens kits)
-                
-                
-                9.Keys & Access Devices
-                
-                (House keys, car keys, RFID tags, access cards)""");
+        getItems();
         int choice = 0;
         boolean isValid = true;
         while (isValid){
@@ -448,6 +420,200 @@ public class Main {
                 break;
         }
     }
+    public static DoublyLinkedList search(Item subject) throws SQLException {
+        DoublyLinkedList returnable = null;
+
+        Map<Class<?>, Function<Object, String>> handlers = new HashMap<>();
+        handlers.put(Keys.class, item -> ((Keys)item).getClassName());
+        handlers.put(Electronics.class, item -> ((Electronics)item).getClassName());
+        handlers.put(Bags.class, item -> ((Bags)item).getClassName());
+        handlers.put(Accessories.class, item -> ((Accessories)item).getClassName());
+        handlers.put(EntertainmentsGears.class, item -> ((EntertainmentsGears)item).getClassName());
+        handlers.put(ChildStuff.class, item -> ((ChildStuff)item).getClassName());
+        handlers.put(Documents.class, item -> ((Documents)item).getClassName());
+        handlers.put(eyeAndVision.class, item -> ((eyeAndVision)item).getClassName());
+        handlers.put(AcademicSupplies.class, item -> ((AcademicSupplies)item).getClassName());
+        Function<Object, String> handler = handlers.get(subject.getClass());
+        if(handler!=null){
+            String result = handler.apply(subject);
+            Statement st = con.createStatement();
+            switch(result){
+                case "Electronics":
+                    DoublyLinkedList list1 =  new DoublyLinkedList();
+                    String sql = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.Brand, e.Model " +
+                            "FROM LostAndfound l " +
+                            "JOIN electronicsandgadgets e ON l.id = e.id " +
+                            "WHERE l.status = 'found' " +
+                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    ResultSet rs1 = st.executeQuery(sql);
+                    ResultSetMetaData rsm = rs1.getMetaData();
+                    while (rs1.next()){
+                        HashMap<String,String> records = new HashMap<>();
+                       for(int i = 1;i<=rsm.getColumnCount();i++){
+                           records.put(rsm.getColumnName(i),rs1.getString(i));
+                       }
+                        list1.insertAtLast(records);
+                    }
+                    returnable = list1;
+                    break;
+                case "Bags":
+                    DoublyLinkedList list2=  new DoublyLinkedList();
+                    String sql2 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.material, e.brand " +
+                            "FROM LostAndfound l " +
+                            "JOIN bags e ON l.id = e.id " +
+                            "WHERE l.status = 'found' " +
+                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+
+                    ResultSet rs2 = st.executeQuery(sql2);
+                    ResultSetMetaData rsm2 = rs2.getMetaData();
+                    while (rs2.next()){
+                        HashMap<String,String> records = new HashMap<>();
+                        for(int i = 1;i<=rsm2.getColumnCount();i++){
+                            records.put(rsm2.getColumnName(i),rs2.getString(i));
+                        }
+                        list2.insertAtLast(records);
+                    }
+                    returnable = list2;
+                    break;
+                case "Accessories":
+                    DoublyLinkedList list3 =  new DoublyLinkedList();
+                    String sql3 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.Brand " +
+                            "FROM LostAndfound l " +
+                            "JOIN accessories e ON l.id = e.id " +
+                            "WHERE l.status = 'found' " +
+                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    ResultSet rs3 = st.executeQuery(sql3);
+                    ResultSetMetaData rsm3 = rs3.getMetaData();
+                    while (rs3.next()){
+                        HashMap<String,String> records = new HashMap<>();
+                        for(int i = 1;i<=rsm3.getColumnCount();i++){
+                            records.put(rsm3.getColumnName(i),rs3.getString(i));
+                        }
+                        list3.insertAtLast(records);
+                    }
+                    returnable = list3;
+                    break;
+                case "AcademicSupplies":
+                    DoublyLinkedList list4 =  new DoublyLinkedList();
+                    String sql4 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.Brand " +
+                            "FROM LostAndfound l " +
+                            "JOIN AcademicSupplies e ON l.id = e.id " +
+                            "WHERE l.status = 'found' " +
+                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    ResultSet rs4 = st.executeQuery(sql4);
+                    ResultSetMetaData rsm4 = rs4.getMetaData();
+                    while (rs4.next()){
+                        HashMap<String,String> records = new HashMap<>();
+                        for(int i = 1;i<=rsm4.getColumnCount();i++){
+                            records.put(rsm4.getColumnName(i),rs4.getString(i));
+                        }
+                        list4.insertAtLast(records);
+                    }
+                    //needs improvement
+                    returnable = list4;
+                    break;
+                case "Documents":
+                    DoublyLinkedList list5 =  new DoublyLinkedList();
+                    String sql5 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.isssueauthority " +
+                            "FROM LostAndfound l " +
+                            "JOIN Documents e ON l.id = e.id " +
+                            "WHERE l.status = 'found' " +
+                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    ResultSet rs5 = st.executeQuery(sql5);
+                    ResultSetMetaData rsm5= rs5.getMetaData();
+                    while (rs5.next()){
+                        HashMap<String,String> records = new HashMap<>();
+                        for(int i = 1;i<=rsm5.getColumnCount();i++){
+                            records.put(rsm5.getColumnName(i),rs5.getString(i));
+                        }
+                        list5.insertAtLast(records);
+                    }
+                    returnable = list5;
+                    break;
+                case "ChildStuff":
+                    DoublyLinkedList list6 =  new DoublyLinkedList();
+                    String sql6 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.Brand" +
+                            "FROM LostAndfound l " +
+                            "JOIN Childstuff e ON l.id = e.id " +
+                            "WHERE l.status = 'found' " +
+                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    ResultSet rs6 = st.executeQuery(sql6);
+                    ResultSetMetaData rsm6 = rs6.getMetaData();
+                    while (rs6.next()){
+                        HashMap<String,String> records = new HashMap<>();
+                        for(int i = 1;i<=rsm6.getColumnCount();i++){
+                            records.put(rsm6.getColumnName(i),rs6.getString(i));
+                            list6.insertAtLast(records);
+                        }
+                        list6.insertAtLast(records);
+                    }
+                    returnable = list6;
+                    break;
+                case "EntertainmentGears":
+                    DoublyLinkedList list7 =  new DoublyLinkedList();
+                    String sql7 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.Brand " +
+                            "FROM LostAndfound l " +
+                            "JOIN entertainmentgears e ON l.id = e.id " +
+                            "WHERE l.status = 'found' " +
+                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    ResultSet rs7 = st.executeQuery(sql7);
+                    ResultSetMetaData rsm7 = rs7.getMetaData();
+                    while (rs7.next()){
+                        HashMap<String,String> records = new HashMap<>();
+                        for(int i = 1;i<=rsm7.getColumnCount();i++){
+                            records.put(rsm7.getColumnName(i),rs7.getString(i));
+                        }
+                        list7.insertAtLast(records);
+                    }
+                    returnable = list7;
+                    break;
+                case "eyeAndVision":
+                    DoublyLinkedList list8 =  new DoublyLinkedList();
+                    String sql8 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.frametype, e.lensgrade,e.brand " +
+                            "FROM LostAndfound l " +
+                            "JOIN eyeAndVision e ON l.id = e.id " +
+                            "WHERE l.status = 'found' " +
+                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    ResultSet rs8 = st.executeQuery(sql8);
+                    ResultSetMetaData rsm8 = rs8.getMetaData();
+                    while (rs8.next()){
+                        HashMap<String,String> records = new HashMap<>();
+                        for(int i = 1;i<=rsm8.getColumnCount();i++){
+                            records.put(rsm8.getColumnName(i),rs8.getString(i));
+                        }
+                        list8.insertAtLast(records);
+                    }
+                    returnable = list8;
+                    break;
+                case "Keys":
+                    DoublyLinkedList list9 =  new DoublyLinkedList();
+                    String sql9 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.Brand, e.keytype " +
+                            "FROM LostAndfound l " +
+                            "JOIN Keys e ON l.id = e.id " +
+                            "WHERE l.status = 'found' " +
+                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    ResultSet rs9 = st.executeQuery(sql9);
+                    ResultSetMetaData rsm9 = rs9.getMetaData();
+                    while (rs9.next()){
+                        HashMap<String,String> records = new HashMap<>();
+                        for(int i = 1;i<=rsm9.getColumnCount();i++){
+                            records.put(rsm9.getColumnName(i),rs9.getString(i));
+                        }
+                        list9.insertAtLast(records);
+                    }
+                    returnable = list9;
+                    break;
+                default:
+                    System.out.println("No such type");
+                    return search(subject);
+            }
+        }
+        return returnable;
+    }
+    public static DoublyLinkedList filterNameAndLocation(DoublyLinkedList CFiltered){
+
+        return null;
+    }
     public static void main(String[] args) throws Exception {
         System.out.println("Welcome to the lost and found Managment System ");
         if(roleIdentification()){
@@ -460,11 +626,6 @@ public class Main {
 class User{
     static Connection con;
     static Scanner sc = new Scanner(System.in);
-    String username;
-    String password;
-    Long MobileNo;
-    String email_id;
-    String Name;
     static void registration() throws ClassNotFoundException, SQLException {
         String driverName = "com.mysql.cj.jdbc.Driver";
         Class.forName(driverName);
@@ -518,9 +679,6 @@ class User{
         if(rs2.next())
             Main.id = rs2.getInt(1);
     }
-    public void setEmail_id(String email_id) {
-        this.email_id = email_id;
-    }
 }
 class Item {
     Scanner sc = new Scanner(System.in);
@@ -532,6 +690,7 @@ class Item {
     public void setName() {
         name = sc.nextLine();
     }
+
     public void setArea() {
         System.out.println("Enter the area it might have lost/found");
         area = sc.nextLine();
@@ -554,6 +713,9 @@ class Item {
     }
 }
 class Electronics extends Item{
+    public String getClassName() {
+        return "Electronics";
+    }
    String model;
    String brand;
     public void setBrand() {
@@ -568,6 +730,9 @@ class Electronics extends Item{
    }
 }
 class Bags extends Item{
+    public String getClassName() {
+        return "Bags";
+    }
   String material;
     String brand;
     public void setBrand() {
@@ -583,6 +748,9 @@ class Bags extends Item{
   }
 }
 class Accessories extends Item{
+    public String getClassName() {
+        return "Accessories";
+    }
     String brand;
     public void setBrand() {
         System.out.println("Enter the brand of the  item if any");
@@ -598,6 +766,9 @@ class Accessories extends Item{
     }
 }
 class Documents extends Item{
+    public String getClassName() {
+        return "Documents";
+    }
     String issueAuthority;
     public void setDetails(){
         System.out.println("Enter the name of Document . e.g(Aadhar card,Pan card etc)");
@@ -608,6 +779,9 @@ class Documents extends Item{
     }
 }
 class AcademicSupplies extends Item {
+    public String getClassName() {
+        return "AcademicSupplies";
+    }
     String brand;
     public void setBrand() {
         System.out.println("Enter the brand of the lost item if any");
@@ -624,6 +798,9 @@ class AcademicSupplies extends Item {
     }
 }
 class EntertainmentsGears extends Item{
+    public String getClassName() {
+        return "EntertainmentGears";
+    }
     String brand;
     public void setBrand() {
         System.out.println("Enter the brand of the lost item if any");
@@ -640,6 +817,9 @@ class EntertainmentsGears extends Item{
     }
 }
 class ChildStuff extends Item {
+    public String getClassName() {
+        return "ChildStuff";
+    }
     String brand;
     public void setBrand() {
         System.out.println("Enter the brand of the lost item if any");
@@ -674,8 +854,13 @@ String lensGrade;
         System.out.println("Specify Lens Grade. e.g(Polymer,Glass)");
         lensGrade=sc.nextLine();
     }
+
+    public String getClassName() {
+        return "eyeAndVision";
+    }
 }
 class Keys extends Item {
+
     String keyType;
     String brand;
     public void setBrand() {
@@ -691,5 +876,34 @@ class Keys extends Item {
         System.out.println("Specify the type of key you have lost(Vehicle keys,Lock keys etc)");
         keyType = sc.nextLine();
         setAttribute();
+    }
+    public String getClassName() {
+        return "Keys";
+    }
+}
+class DoublyLinkedList{
+    class Node{
+        Node prev;
+        Node next;
+        HashMap<String,String> record;
+        Node(HashMap<String,String> a){
+            record = a;
+            prev=null;
+            next=null;
+        }
+    }
+    Node first = null;
+    public  void insertAtLast(HashMap<String,String> a){
+        Node n = new Node(a);
+        if(first==null)
+            first=n;
+        else{
+            Node temp = first;
+            while (temp.next!=null){
+                temp=temp.next;
+            }
+            temp.next=n;
+            n.prev=temp;
+        }
     }
 }
