@@ -151,7 +151,7 @@ public class Main {
             found();
         }
     }
-    static public int insertDetails(Item e) throws SQLException {
+    static public int insertDetails(Item e,String status) throws SQLException {
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
         String sql = "INSERT INTO Lostandfound(uid, name, area, date, color, attribute, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
          PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -161,7 +161,7 @@ public class Main {
             ps.setString(4, e.date);
             ps.setString(5, e.color);
             ps.setString(6, e.attribute);
-            ps.setString(7, "lost");
+            ps.setString(7, status);
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
@@ -230,7 +230,7 @@ public class Main {
         switch (choice){
             case 1:Electronics e = new Electronics();
                 e.setDetails();
-                int lid1 = insertDetails(e);//Last generated id
+                int lid1 = insertDetails(e,"lost");//Last generated id
                 PreparedStatement pst1 = con.prepareStatement("insert into electronicsandgadgets values(?,?,?)");
                 pst1.setInt(1,lid1);
                 pst1.setString(2,e.brand);
@@ -239,7 +239,7 @@ public class Main {
             lost= e;break;
             case 2:Bags a = new Bags();
                 a.setDetails();
-                int lid2 = insertDetails(a);//Last generated id
+                int lid2 = insertDetails(a,"lost");//Last generated id
                 PreparedStatement pst2 = con.prepareStatement("insert into bags values(?,?,?)");
                 pst2.setInt(1,lid2);
                 pst2.setString(2,a.material);
@@ -249,7 +249,7 @@ public class Main {
             break;
             case 3: Accessories c = new Accessories();
             c.setDetails();
-            int lid3 = insertDetails(c);
+            int lid3 = insertDetails(c,"lost");
             PreparedStatement pst3 = con.prepareStatement("insert into accessories values(?,?)");
             pst3.setInt(1,lid3);
             pst3.setString(2,c.brand);
@@ -258,7 +258,7 @@ public class Main {
             break;
             case 4:Documents d = new Documents();
             d.setDetails();
-            int lid4 = insertDetails(d);
+            int lid4 = insertDetails(d,"lost");
             PreparedStatement pst4 = con.prepareStatement("insert into Documents values(?,?)");
             pst4.setInt(1,lid4);
             pst4.setString(2,d.issueAuthority);
@@ -267,7 +267,7 @@ public class Main {
             break;
             case 5:AcademicSupplies s = new AcademicSupplies();
             s.setDetails();
-                int lid5 = insertDetails(s);
+                int lid5 = insertDetails(s,"lost");
                 PreparedStatement pst5 = con.prepareStatement("insert into AcademicSupplies values(?,?)");
                 pst5.setInt(1,lid5);
                 pst5.setString(2,s.brand);
@@ -276,7 +276,7 @@ public class Main {
             break;
             case 6:EntertainmentsGears eg = new EntertainmentsGears();
             eg.setDetails();
-                int lid6 = insertDetails(eg);
+                int lid6 = insertDetails(eg,"lost");
                 PreparedStatement pst6 = con.prepareStatement("insert into entertainmentgears values(?,?)");
                 pst6.setInt(1,lid6);
                 pst6.setString(2,eg.brand);
@@ -285,7 +285,7 @@ public class Main {
             break;
             case 7:ChildStuff cs = new ChildStuff();
             cs.setDetails();
-                int lid7 = insertDetails(cs);
+                int lid7 = insertDetails(cs,"lost");
                 PreparedStatement pst7 = con.prepareStatement("insert into Childstuff values(?,?)");
                 pst7.setInt(1,lid7);
                 pst7.setString(2,cs.brand);
@@ -294,7 +294,7 @@ public class Main {
             break;
             case 8:eyeAndVision ev = new eyeAndVision();
             ev.setDetails();
-                int lid8 = insertDetails(ev);
+                int lid8 = insertDetails(ev,"lost");
                 PreparedStatement pst8 = con.prepareStatement("insert into eyeAndvision values(?,?,?)");
                 pst8.setInt(1,lid8);
                 pst8.setString(2,ev.FrameType);
@@ -305,7 +305,7 @@ public class Main {
             break;
             case 9:Keys k = new Keys();
             k.setDetails();
-                int lid9 = insertDetails(k);
+                int lid9 = insertDetails(k,"lost");
                 PreparedStatement pst9 = con.prepareStatement("insert into Keys values(?,?)");
                 pst9.setInt(1,lid9);
                 pst9.setString(2,k.keyType);
@@ -339,7 +339,7 @@ public class Main {
         switch (choice){
             case 1:Electronics e = new Electronics();
                 e.setDetails();
-                int lid1 = insertDetails(e);//Last generated id
+                int lid1 = insertDetails(e,"found");//Last generated id
                 PreparedStatement pst1 = con.prepareStatement("insert into electronicsandgadgets values(?,?,?)");
                 pst1.setInt(1,lid1);
                 pst1.setString(2,e.brand);
@@ -348,7 +348,7 @@ public class Main {
                 break;
             case 2:Bags a = new Bags();
                 a.setDetails();
-                int lid2 = insertDetails(a);//Last generated id
+                int lid2 = insertDetails(a,"found");//Last generated id
                 PreparedStatement pst2 = con.prepareStatement("insert into bags values(?,?,?)");
                 pst2.setInt(1,lid2);
                 pst2.setString(2,a.material);
@@ -357,7 +357,7 @@ public class Main {
                 break;
             case 3: Accessories c = new Accessories();
                 c.setDetails();
-                int lid3 = insertDetails(c);
+                int lid3 = insertDetails(c,"found");
                 PreparedStatement pst3 = con.prepareStatement("insert into accessories values(?,?)");
                 pst3.setInt(1,lid3);
                 pst3.setString(2,c.brand);
@@ -365,7 +365,7 @@ public class Main {
                 break;
             case 4:Documents d = new Documents();
                 d.setDetails();
-                int lid4 = insertDetails(d);
+                int lid4 = insertDetails(d,"found");
                 PreparedStatement pst4 = con.prepareStatement("insert into Documents values(?,?)");
                 pst4.setInt(1,lid4);
                 pst4.setString(2,d.issueAuthority);
@@ -373,7 +373,7 @@ public class Main {
                 break;
             case 5:AcademicSupplies s = new AcademicSupplies();
                 s.setDetails();
-                int lid5 = insertDetails(s);
+                int lid5 = insertDetails(s,"found");
                 PreparedStatement pst5 = con.prepareStatement("insert into AcademicSupplies values(?,?)");
                 pst5.setInt(1,lid5);
                 pst5.setString(2,s.brand);
@@ -381,7 +381,7 @@ public class Main {
                 break;
             case 6:EntertainmentsGears eg = new EntertainmentsGears();
                 eg.setDetails();
-                int lid6 = insertDetails(eg);
+                int lid6 = insertDetails(eg,"found");
                 PreparedStatement pst6 = con.prepareStatement("insert into entertainmentgears values(?,?)");
                 pst6.setInt(1,lid6);
                 pst6.setString(2,eg.brand);
@@ -389,7 +389,7 @@ public class Main {
                 break;
             case 7:ChildStuff cs = new ChildStuff();
                 cs.setDetails();
-                int lid7 = insertDetails(cs);
+                int lid7 = insertDetails(cs,"found");
                 PreparedStatement pst7 = con.prepareStatement("insert into Childstuff values(?,?)");
                 pst7.setInt(1,lid7);
                 pst7.setString(2,cs.brand);
@@ -397,7 +397,7 @@ public class Main {
                 break;
             case 8:eyeAndVision ev = new eyeAndVision();
                 ev.setDetails();
-                int lid8 = insertDetails(ev);
+                int lid8 = insertDetails(ev,"found");
                 PreparedStatement pst8 = con.prepareStatement("insert into eyeAndvision values(?,?,?)");
                 pst8.setInt(1,lid8);
                 pst8.setString(2,ev.FrameType);
@@ -407,7 +407,7 @@ public class Main {
                 break;
             case 9:Keys k = new Keys();
                 k.setDetails();
-                int lid9 = insertDetails(k);
+                int lid9 = insertDetails(k,"found");
                 PreparedStatement pst9 = con.prepareStatement("insert into Keys values(?,?)");
                 pst9.setInt(1,lid9);
                 pst9.setString(2,k.keyType);
@@ -611,7 +611,7 @@ public class Main {
         return returnable;
     }
     public static DoublyLinkedList filterNameAndLocation(DoublyLinkedList CFiltered){
-
+        DoublyLinkedList flFiltered = CFiltered.flFilter();
         return null;
     }
     public static void main(String[] args) throws Exception {
@@ -882,6 +882,10 @@ class Keys extends Item {
     }
 }
 class DoublyLinkedList{
+    public DoublyLinkedList flFilter() {
+        return null;
+    }
+
     class Node{
         Node prev;
         Node next;
