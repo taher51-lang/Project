@@ -1,3 +1,5 @@
+import org.simmetrics.StringMetric;
+import org.simmetrics.metrics.JaroWinkler;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -103,6 +105,8 @@ public class Main {
                             System.out.println("Incorrect userName or password");
                         }
                         LostAndFoundProcess();
+                        temp=false;
+                        break;
                         case 2: User.registration();
                         LostAndFoundProcess();
                             temp=false;
@@ -144,13 +148,35 @@ public class Main {
         String circumstance=sc.next();
         if(circumstance.equalsIgnoreCase("lost")){
             Item subject = Lost();
-            DoublyLinkedList stage1 = search(subject);//Category filter
-            DoublyLinkedList stage2 = filterNameAndLocation(stage1);
+            DoublyLinkedList stage1 = search(subject);
+            if(stage1==null){
+                System.out.println("No such Item detected. Kindly login again to proceed");
+                System.exit(0);
+            }
+            stage1.display();
+            DoublyLinkedList stage2 = filterName_location_color(stage1,subject);//Name and location and color
+            DoublyLinkedList stage3 = filterAdditionals(stage2,subject);
+            if(stage3.exists()){
+                stage3.display();
+                System.out.println("We have found a Match in accordance to your Specifications.");
+                System.out.println("Your request is in Admin verification and you may get contacted for more details via email.");
+                System.out.println("The whole process might take upto a week to complete.");
+                stage3.setAdminVerification(id,subject);
+            }
+            else{
+                System.out.println("No such item has been found");
+            }
         }
         else{
             found();
         }
     }
+
+    private static DoublyLinkedList filterAdditionals(DoublyLinkedList stage3, Item subject) {
+        String result = getSubjectInstance(subject);
+        return stage3.filterMoreAttributes(subject,result);
+    }
+
     static public int insertDetails(Item e,String status) throws SQLException {
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
         String sql = "INSERT INTO Lostandfound(uid, name, area, date, color, attribute, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -173,44 +199,35 @@ public class Main {
             }
     }
     public static void getItems(){
-        System.out.println("""
-                1.Electronics & Gadgets
-                (Mobile phones, tablets, laptops, cameras, chargers, earphones etc)
-                
-                
-                2.Bags & Carriers
-                (Suitcases, backpacks, laptop bags, tote bags)
-                
-                
-                3.Clothing & Accessories
-                (Jackets, scarves, gloves, caps, jewelry, watches)
-                
-                
-                4.Identity & Documents
-                (ID cards, passports, licenses, student cards, certificates)
-                
-                
-                5.Academic Supplies
-                Books, notebooks, stationery, calculators
-                
-                
-                6.Hobby & Entertainment Gear
-                
-                (Game consoles, musical instruments, sports equipment)
-                
-                
-                .7Children’s Belongings
-                
-                (Toys, lunch boxes, baby bags, pacifiers)
-                
-                8.Eyewear & Vision Aids
-                
-                (Glasses, sunglasses, contact lens kits)
-                
-                
-                9.Keys & Access Devices
-                
-                (House keys, car keys, RFID tags, access cards)""");
+        System.out.println(
+                "1. Electronics & Gadgets"+
+                   "(Mobile phones, tablets, laptops, cameras, chargers, earphones etc)"+
+
+                "2. Bags & Carriers"+
+                   "(Suitcases, backpacks, laptop bags, tote bags)"+
+
+               "3. Clothing & Accessories"+
+                  " (Jackets, scarves, gloves, caps, jewelry, watches)"+
+
+                "4. Identity & Documents "+
+                   "(ID cards, passports, licenses, student cards, certificates)"+
+
+                "5. Academic Supplies"+
+                   "(Books, notebooks, stationery, calculators)"+
+
+                "6. Hobby & Entertainment Gear"+
+                 "  (Game consoles, musical instruments, sports equipment)"+
+
+                ". Children’s Belongings"+
+                  " (Toys, lunch boxes, baby bags, pacifiers)"+
+
+                "8. Eyewear & Vision Aids"+
+                   "(Glasses, sunglasses, contact lens kits)"+
+
+                "9. Keys & Access Devices"+
+                   "(House keys, car keys, RFID tags, access cards)");
+
+
     }
     static Item Lost() throws SQLException {
         System.out.println("Kindly enter the category in which your lost item fits: ");
@@ -306,7 +323,7 @@ public class Main {
             case 9:Keys k = new Keys();
             k.setDetails();
                 int lid9 = insertDetails(k,"lost");
-                PreparedStatement pst9 = con.prepareStatement("insert into Keys values(?,?)");
+                PreparedStatement pst9 = con.prepareStatement("insert into KeyAccess values(?,?,?)");
                 pst9.setInt(1,lid9);
                 pst9.setString(2,k.keyType);
                 pst9.setString(3,k.brand);
@@ -408,7 +425,7 @@ public class Main {
             case 9:Keys k = new Keys();
                 k.setDetails();
                 int lid9 = insertDetails(k,"found");
-                PreparedStatement pst9 = con.prepareStatement("insert into Keys values(?,?)");
+                PreparedStatement pst9 = con.prepareStatement("insert into Keyaccess values(?,?,?)");
                 pst9.setInt(1,lid9);
                 pst9.setString(2,k.keyType);
                 pst9.setString(3,k.brand);
@@ -420,9 +437,7 @@ public class Main {
                 break;
         }
     }
-    public static DoublyLinkedList search(Item subject) throws SQLException {
-        DoublyLinkedList returnable = null;
-
+    public static String getSubjectInstance(Item subject){
         Map<Class<?>, Function<Object, String>> handlers = new HashMap<>();
         handlers.put(Keys.class, item -> ((Keys)item).getClassName());
         handlers.put(Electronics.class, item -> ((Electronics)item).getClassName());
@@ -434,17 +449,36 @@ public class Main {
         handlers.put(eyeAndVision.class, item -> ((eyeAndVision)item).getClassName());
         handlers.put(AcademicSupplies.class, item -> ((AcademicSupplies)item).getClassName());
         Function<Object, String> handler = handlers.get(subject.getClass());
-        if(handler!=null){
-            String result = handler.apply(subject);
+        if(handler!=null)
+           return handler.apply(subject);
+        else{
+            return "Incorrect object type";
+        }
+    }
+    public static DoublyLinkedList search(Item subject) throws SQLException {
+        DoublyLinkedList returnable;
+
+            String result =getSubjectInstance(subject);
             Statement st = con.createStatement();
             switch(result){
                 case "Electronics":
                     DoublyLinkedList list1 =  new DoublyLinkedList();
-                    String sql = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.Brand, e.Model " +
-                            "FROM LostAndfound l " +
-                            "JOIN electronicsandgadgets e ON l.id = e.id " +
-                            "WHERE l.status = 'found' " +
-                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    String sql = "SELECT \n" +
+                            "    l.uid, \n" +
+                            "    l.name, \n" +
+                            "    l.area, \n" +
+                            "    l.date, \n" +
+                            "    l.color, \n" +
+                            "    l.attribute, \n" +
+                            "    e.Brand, \n" +
+                            "    e.Model\n" +
+                            "FROM \n" +
+                            "    LostAndfound l\n" +
+                            "JOIN \n" +
+                            "    electronicsandgadgets e ON l.id = e.id\n" +
+                            "WHERE \n" +
+                            "    l.status = 'found'\n" +
+                            "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
                     ResultSet rs1 = st.executeQuery(sql);
                     ResultSetMetaData rsm = rs1.getMetaData();
                     while (rs1.next()){
@@ -457,31 +491,59 @@ public class Main {
                     returnable = list1;
                     break;
                 case "Bags":
+                    System.out.println("s2 cleared");
                     DoublyLinkedList list2=  new DoublyLinkedList();
-                    String sql2 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.material, e.brand " +
-                            "FROM LostAndfound l " +
-                            "JOIN bags e ON l.id = e.id " +
-                            "WHERE l.status = 'found' " +
-                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    String sql2 = "SELECT \n" +
+                            "    l.uid, \n" +
+                            "    l.name, \n" +
+                            "    l.area, \n" +
+                            "    l.date, \n" +
+                            "    l.color, \n" +
+                            "    l.attribute, \n" +
+                            "    e.material, \n" +
+                            "    e.brand\n" +
+                            "FROM \n" +
+                            "    LostAndfound l\n" +
+                            "JOIN \n" +
+                            "    bags e ON l.id = e.id\n" +
+                            "WHERE \n" +
+                            "    l.status = 'found'\n" +
+                            "    AND l.date BETWEEN DATE_SUB(CURDATE(), INTERVAL 1 MONTH) AND CURDATE();";
 
                     ResultSet rs2 = st.executeQuery(sql2);
                     ResultSetMetaData rsm2 = rs2.getMetaData();
                     while (rs2.next()){
                         HashMap<String,String> records = new HashMap<>();
                         for(int i = 1;i<=rsm2.getColumnCount();i++){
+                            System.out.println(rs2.getString(1));
+                            System.out.println(rs2.getString(2));
+                            System.out.println(rs2.getString(3));
+                            System.out.println(rsm2.getColumnName(3));
+                            System.out.println(rs2.getString(4));
                             records.put(rsm2.getColumnName(i),rs2.getString(i));
                         }
                         list2.insertAtLast(records);
+                        System.out.println("S3 clear");
                     }
                     returnable = list2;
                     break;
                 case "Accessories":
                     DoublyLinkedList list3 =  new DoublyLinkedList();
-                    String sql3 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.Brand " +
-                            "FROM LostAndfound l " +
-                            "JOIN accessories e ON l.id = e.id " +
-                            "WHERE l.status = 'found' " +
-                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    String sql3 = "SELECT \n" +
+                            "    l.uid, \n" +
+                            "    l.name, \n" +
+                            "    l.area, \n" +
+                            "    l.date, \n" +
+                            "    l.color, \n" +
+                            "    l.attribute, \n" +
+                            "    e.Brand\n" +
+                            "FROM \n" +
+                            "    LostAndfound l\n" +
+                            "JOIN \n" +
+                            "    accessories e ON l.id = e.id\n" +
+                            "WHERE \n" +
+                            "    l.status = 'found'\n" +
+                            "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
                     ResultSet rs3 = st.executeQuery(sql3);
                     ResultSetMetaData rsm3 = rs3.getMetaData();
                     while (rs3.next()){
@@ -495,11 +557,21 @@ public class Main {
                     break;
                 case "AcademicSupplies":
                     DoublyLinkedList list4 =  new DoublyLinkedList();
-                    String sql4 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.Brand " +
-                            "FROM LostAndfound l " +
-                            "JOIN AcademicSupplies e ON l.id = e.id " +
-                            "WHERE l.status = 'found' " +
-                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    String sql4 = "SELECT \n" +
+                            "    l.uid, \n" +
+                            "    l.name, \n" +
+                            "    l.area, \n" +
+                            "    l.date, \n" +
+                            "    l.color, \n" +
+                            "    l.attribute, \n" +
+                            "    e.Brand\n" +
+                            "FROM \n" +
+                            "    LostAndfound l\n" +
+                            "JOIN \n" +
+                            "    AcademicSupplies e ON l.id = e.id\n" +
+                            "WHERE \n" +
+                            "    l.status = 'found'\n" +
+                            "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
                     ResultSet rs4 = st.executeQuery(sql4);
                     ResultSetMetaData rsm4 = rs4.getMetaData();
                     while (rs4.next()){
@@ -514,11 +586,21 @@ public class Main {
                     break;
                 case "Documents":
                     DoublyLinkedList list5 =  new DoublyLinkedList();
-                    String sql5 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.isssueauthority " +
-                            "FROM LostAndfound l " +
-                            "JOIN Documents e ON l.id = e.id " +
-                            "WHERE l.status = 'found' " +
-                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    String sql5 = "SELECT \n" +
+                            "    l.uid, \n" +
+                            "    l.name, \n" +
+                            "    l.area, \n" +
+                            "    l.date, \n" +
+                            "    l.color, \n" +
+                            "    l.attribute, \n" +
+                            "    e.isssueauthority\n" +
+                            "FROM \n" +
+                            "    LostAndfound l\n" +
+                            "JOIN \n" +
+                            "    Documents e ON l.id = e.id\n" +
+                            "WHERE \n" +
+                            "    l.status = 'found'\n" +
+                            "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
                     ResultSet rs5 = st.executeQuery(sql5);
                     ResultSetMetaData rsm5= rs5.getMetaData();
                     while (rs5.next()){
@@ -532,11 +614,21 @@ public class Main {
                     break;
                 case "ChildStuff":
                     DoublyLinkedList list6 =  new DoublyLinkedList();
-                    String sql6 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.Brand" +
-                            "FROM LostAndfound l " +
-                            "JOIN Childstuff e ON l.id = e.id " +
-                            "WHERE l.status = 'found' " +
-                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    String sql6 = "SELECT \n" +
+                            "    l.uid, \n" +
+                            "    l.name, \n" +
+                            "    l.area, \n" +
+                            "    l.date, \n" +
+                            "    l.color, \n" +
+                            "    l.attribute, \n" +
+                            "    e.Brand\n" +
+                            "FROM \n" +
+                            "    LostAndfound l\n" +
+                            "JOIN \n" +
+                            "    Childstuff e ON l.id = e.id\n" +
+                            "WHERE \n" +
+                            "    l.status = 'found'\n" +
+                            "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
                     ResultSet rs6 = st.executeQuery(sql6);
                     ResultSetMetaData rsm6 = rs6.getMetaData();
                     while (rs6.next()){
@@ -551,11 +643,21 @@ public class Main {
                     break;
                 case "EntertainmentGears":
                     DoublyLinkedList list7 =  new DoublyLinkedList();
-                    String sql7 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.Brand " +
-                            "FROM LostAndfound l " +
-                            "JOIN entertainmentgears e ON l.id = e.id " +
-                            "WHERE l.status = 'found' " +
-                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    String sql7 = "SELECT \n" +
+                            "    l.uid, \n" +
+                            "    l.name, \n" +
+                            "    l.area, \n" +
+                            "    l.date, \n" +
+                            "    l.color, \n" +
+                            "    l.attribute, \n" +
+                            "    e.Brand\n" +
+                            "FROM \n" +
+                            "    LostAndfound l\n" +
+                            "JOIN \n" +
+                            "    entertainmentgears e ON l.id = e.id\n" +
+                            "WHERE \n" +
+                            "    l.status = 'found'\n" +
+                            "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
                     ResultSet rs7 = st.executeQuery(sql7);
                     ResultSetMetaData rsm7 = rs7.getMetaData();
                     while (rs7.next()){
@@ -569,11 +671,23 @@ public class Main {
                     break;
                 case "eyeAndVision":
                     DoublyLinkedList list8 =  new DoublyLinkedList();
-                    String sql8 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.frametype, e.lensgrade,e.brand " +
-                            "FROM LostAndfound l " +
-                            "JOIN eyeAndVision e ON l.id = e.id " +
-                            "WHERE l.status = 'found' " +
-                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    String sql8 = "SELECT \n" +
+                            "    l.uid, \n" +
+                            "    l.name, \n" +
+                            "    l.area, \n" +
+                            "    l.date, \n" +
+                            "    l.color, \n" +
+                            "    l.attribute, \n" +
+                            "    e.frametype, \n" +
+                            "    e.lensgrade, \n" +
+                            "    e.brand\n" +
+                            "FROM \n" +
+                            "    LostAndfound l\n" +
+                            "JOIN \n" +
+                            "    eyeAndVision e ON l.id = e.id\n" +
+                            "WHERE \n" +
+                            "    l.status = 'found'\n" +
+                            "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
                     ResultSet rs8 = st.executeQuery(sql8);
                     ResultSetMetaData rsm8 = rs8.getMetaData();
                     while (rs8.next()){
@@ -587,11 +701,22 @@ public class Main {
                     break;
                 case "Keys":
                     DoublyLinkedList list9 =  new DoublyLinkedList();
-                    String sql9 = "SELECT l.uid, l.name, l.area, l.date, l.color, l.attribute, e.Brand, e.keytype " +
-                            "FROM LostAndfound l " +
-                            "JOIN Keys e ON l.id = e.id " +
-                            "WHERE l.status = 'found' " +
-                            "AND l.date BETWEEN current_date - INTERVAL '1 month' AND current_date";
+                    String sql9 = "SELECT \n" +
+                            "    l.uid, \n" +
+                            "    l.name, \n" +
+                            "    l.area, \n" +
+                            "    l.date, \n" +
+                            "    l.color, \n" +
+                            "    l.attribute, \n" +
+                            "    e.Brand, \n" +
+                            "    e.keytype\n" +
+                            "FROM \n" +
+                            "    LostAndfound l\n" +
+                            "JOIN \n" +
+                            "    KeyAccess e ON l.id = e.id\n" +
+                            "WHERE \n" +
+                            "    l.status = 'found'\n" +
+                            "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
                     ResultSet rs9 = st.executeQuery(sql9);
                     ResultSetMetaData rsm9 = rs9.getMetaData();
                     while (rs9.next()){
@@ -605,14 +730,13 @@ public class Main {
                     break;
                 default:
                     System.out.println("No such type");
-                    return search(subject);
+                    return null;
             }
-        }
+
         return returnable;
     }
-    public static DoublyLinkedList filterNameAndLocation(DoublyLinkedList CFiltered){
-        DoublyLinkedList flFiltered = CFiltered.flFilter();
-        return null;
+    public static DoublyLinkedList filterName_location_color(DoublyLinkedList CFiltered,Item subject){
+        return CFiltered.flFilter(subject);
     }
     public static void main(String[] args) throws Exception {
         System.out.println("Welcome to the lost and found Managment System ");
@@ -849,6 +973,7 @@ String lensGrade;
         setArea();
         setBrand();
         setColor();
+        setAttribute();
         System.out.println("Specify the Frame type of the lens(e.g Full rim,Half rim)");
         FrameType=sc.nextLine();
         System.out.println("Specify Lens Grade. e.g(Polymer,Glass)");
@@ -882,8 +1007,108 @@ class Keys extends Item {
     }
 }
 class DoublyLinkedList{
-    public DoublyLinkedList flFilter() {
-        return null;
+    public DoublyLinkedList flFilter(Item subject) {
+        DoublyLinkedList filter = new DoublyLinkedList();
+        Node temp = first;
+        while (temp!=null){
+            StringMetric a = new JaroWinkler();
+            float scoreName = a.compare(temp.record.get("name"), subject.name);
+            float scoreAddress =  a.compare(temp.record.get("area"), subject.area);
+            float scorecolor = a.compare(temp.record.get("color"), subject.color);
+            float sum = scorecolor+scoreAddress+scoreName;
+            if(sum>=1.95) {
+                filter.insertAtLast(temp.record);
+            }
+                temp=temp.next;
+        }
+        return filter;
+    }
+
+    public DoublyLinkedList filterMoreAttributes(Item subject, String result) {
+        Node temp = first;
+        StringMetric match = new JaroWinkler();
+        DoublyLinkedList finalFilter = new DoublyLinkedList();
+        while (temp!=null){
+        switch (result.toLowerCase()) {
+            case "electronics":
+                Electronics e = (Electronics) subject;
+                float brandScore1 = match.compare(e.brand,temp.record.get("brand"));
+                float modelScore = match.compare(e.model,temp.record.get("Model"));
+                if((brandScore1+modelScore)>=1.3){
+                    finalFilter.insertAtLast(temp.record);
+                }
+                break;
+            case "bags":
+                Bags b = (Bags) subject;
+                System.out.println(b.brand);
+                float MaterialScore = match.compare(b.material,temp.record.get("material"));
+                float brandScore2 = match.compare(b.brand,temp.record.get("brand"));
+                if((brandScore2+MaterialScore)>=1.3){
+                    finalFilter.insertAtLast(temp.record);
+                }
+                break;
+            case "accessories":
+                Accessories ac = (Accessories) subject;
+                float brandScore3 = match.compare(ac.brand,temp.record.get("brand"));
+                if(brandScore3>0.65){
+                    finalFilter.insertAtLast(temp.record);
+                }
+                break;
+                case "childstuff":
+                ChildStuff ch = (ChildStuff) subject;
+                float brandScore4 = match.compare(ch.brand,temp.record.get("brand"));
+                if(brandScore4>0.65){
+                    finalFilter.insertAtLast(temp.record);
+                }
+                break;
+                case "academicsupplies":
+                    AcademicSupplies as = (AcademicSupplies) subject;
+                    float brandScore5 = match.compare(as.brand,temp.record.get("brand"));
+                    if(brandScore5>0.65){
+                        finalFilter.insertAtLast(temp.record);
+                   }
+                break;
+                case "entertainmentgears":
+                    EntertainmentsGears et = (EntertainmentsGears) subject;
+                    float brandScore6 = match.compare(et.brand,temp.record.get("brand"));
+                    if(brandScore6>0.65){
+                       finalFilter.insertAtLast(temp.record);
+                   }
+                break;
+            case "keys":
+                Keys k = (Keys) subject;
+                float keyScore = match.compare(k.keyType,temp.record.get("keytype"));
+                float brandscore7 = match.compare(k.brand,temp.record.get("brand"));
+                if((brandscore7+keyScore)>=1.3)
+                    finalFilter.insertAtLast(temp.record);
+                break;
+            case "eyeandvision":
+                eyeAndVision ev = (eyeAndVision) subject;
+                float frameScore = match.compare(ev.FrameType,temp.record.get("frametype"));
+                float lensScore = match.compare(ev.lensGrade,temp.record.get("lensgrade"));
+                float brandScore8 = match.compare(ev.brand,temp.record.get("brand"));
+                if((frameScore+lensScore+brandScore8)>=1.95)
+                    finalFilter.insertAtLast(temp.record);
+                break;
+            case "documents":
+                Documents d = (Documents) subject;
+                float isScore = match.compare(d.issueAuthority,temp.record.get("issueauthority"));
+                if(isScore>0.65)
+                    finalFilter.insertAtLast(temp.record);
+                break;
+            }
+            temp=temp.next;
+        }
+        return finalFilter;
+    }
+
+    public boolean exists() {
+       return first!=null;
+    }
+
+    public void setAdminVerification(int LostUserid,Item subject) {
+        //History and flagging
+        //Photo and metadata
     }
 
     class Node{
@@ -908,6 +1133,14 @@ class DoublyLinkedList{
             }
             temp.next=n;
             n.prev=temp;
+        }
+    }
+    public void display(){
+        Node temp = first;
+        System.out.println(first);
+        while (temp!=null){
+            System.out.println(temp.record);
+            temp=temp.next;
         }
     }
 }
