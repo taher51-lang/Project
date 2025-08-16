@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Function;
-
 class Tree{
     class Node{
         Node right;
@@ -74,6 +73,7 @@ public class Main {
     static Scanner sc = new Scanner(System.in);
     static Item lost;
     static int id;
+    static int Lid;
     static boolean roleIdentification() throws SQLException, ClassNotFoundException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
@@ -82,47 +82,68 @@ public class Main {
         System.out.println("---1.User");
         System.out.println("---2.Admin");
         int role = 0;
-        try {
-            role = Integer.parseInt(sc.next());
+        boolean condition1 =true;
+        while (condition1) {
+            try {
+                role = Integer.parseInt(sc.next());
+                condition1=false;
+            } catch (NumberFormatException e) {
+                System.out.println("---Kindly enter proper numeric input---");
+            }
         }
-        catch (NumberFormatException e) {
-            System.out.println("---Kindly enter proper numeric input---");
-            roleIdentification();
-        }
-        switch (role){
-            case 1:
-                System.out.println("Enter 1 if you are a Registered User and 2 if you are a new user");
-                boolean temp = true;
-                while (temp){
-                    try {
-                        role = Integer.parseInt(sc.next());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Enter numeric input");
-                        continue;
-                    }
-                    switch (role){
-                        case 1: while (!login()){
-                            System.out.println("Incorrect userName or password");
+        boolean condition2 = true;
+        while (condition2) {
+            switch (role) {
+                case 1:
+                    condition2=false;
+                    System.out.println("Enter 1 if you are a Registered User and 2 if you are a new user");
+                    boolean temp = true;
+                    while (temp) {
+                        try {
+                            role = Integer.parseInt(sc.next());
+                        } catch (NumberFormatException e) {
+                            System.out.println("Enter numeric input");
+                            continue;
                         }
-                        LostAndFoundProcess();
-                        temp=false;
-                        break;
-                        case 2: User.registration();
-                        LostAndFoundProcess();
-                            temp=false;
-                            break;
-                        default:
-                            System.out.println("Enter proper digit");break;
+                        switch (role) {
+                            case 1:
+                                while (!login()) {
+                                    System.out.println("Incorrect userName or password");
+                                }
+                                LostAndFoundProcess();
+                                temp = false;
+                                break;
+                            case 2:
+                                User.registration();
+                                LostAndFoundProcess();
+                                temp = false;
+                                break;
+                            default:
+                                System.out.println("Enter proper digit");
+                                break;
+                        }
                     }
-                }
 
-                break;
-            case 2: adminOrUser=false;break;
-            default:
-                System.out.println("Enter 1 or 2 in accordance to your role");
-                roleIdentification();
-                break;
+                    break;
+                case 2:
+                    condition2=false;
+                    adminOrUser = false;
+                    break;
+                default:
+                    System.out.println("Enter 1 or 2 in accordance to your role");
+                    boolean temp2 = true;
+                    while (temp2) {
+                        try {
+                            role = Integer.parseInt(sc.next());
+                            temp2=false;
+                        } catch (NumberFormatException e) {
+                            System.out.println("Enter numeric input");
+                        }
+                    }
+                    break;
+            }
         }
+
         return adminOrUser;
     }
     static boolean login() throws SQLException {
@@ -161,7 +182,7 @@ public class Main {
                 System.out.println("We have found a Match in accordance to your Specifications.");
                 System.out.println("Your request is in Admin verification and you may get contacted for more details via email.");
                 System.out.println("The whole process might take upto a week to complete.");
-                stage3.setAdminVerification(id,subject);
+                stage3.setAdminVerification(Lid,id);
             }
             else{
                 System.out.println("No such item has been found");
@@ -247,7 +268,8 @@ public class Main {
         switch (choice){
             case 1:Electronics e = new Electronics();
                 e.setDetails();
-                int lid1 = insertDetails(e,"lost");//Last generated id
+                int lid1 = insertDetails(e,"lost");
+                Lid=lid1;//Last generated id
                 PreparedStatement pst1 = con.prepareStatement("insert into electronicsandgadgets values(?,?,?)");
                 pst1.setInt(1,lid1);
                 pst1.setString(2,e.brand);
@@ -257,6 +279,7 @@ public class Main {
             case 2:Bags a = new Bags();
                 a.setDetails();
                 int lid2 = insertDetails(a,"lost");//Last generated id
+                Lid=lid2;
                 PreparedStatement pst2 = con.prepareStatement("insert into bags values(?,?,?)");
                 pst2.setInt(1,lid2);
                 pst2.setString(2,a.material);
@@ -267,6 +290,7 @@ public class Main {
             case 3: Accessories c = new Accessories();
             c.setDetails();
             int lid3 = insertDetails(c,"lost");
+            Lid=lid3;
             PreparedStatement pst3 = con.prepareStatement("insert into accessories values(?,?)");
             pst3.setInt(1,lid3);
             pst3.setString(2,c.brand);
@@ -276,6 +300,7 @@ public class Main {
             case 4:Documents d = new Documents();
             d.setDetails();
             int lid4 = insertDetails(d,"lost");
+            Lid=lid4;
             PreparedStatement pst4 = con.prepareStatement("insert into Documents values(?,?)");
             pst4.setInt(1,lid4);
             pst4.setString(2,d.issueAuthority);
@@ -285,6 +310,7 @@ public class Main {
             case 5:AcademicSupplies s = new AcademicSupplies();
             s.setDetails();
                 int lid5 = insertDetails(s,"lost");
+                Lid=lid5;
                 PreparedStatement pst5 = con.prepareStatement("insert into AcademicSupplies values(?,?)");
                 pst5.setInt(1,lid5);
                 pst5.setString(2,s.brand);
@@ -294,6 +320,7 @@ public class Main {
             case 6:EntertainmentsGears eg = new EntertainmentsGears();
             eg.setDetails();
                 int lid6 = insertDetails(eg,"lost");
+                Lid=lid6;
                 PreparedStatement pst6 = con.prepareStatement("insert into entertainmentgears values(?,?)");
                 pst6.setInt(1,lid6);
                 pst6.setString(2,eg.brand);
@@ -303,6 +330,7 @@ public class Main {
             case 7:ChildStuff cs = new ChildStuff();
             cs.setDetails();
                 int lid7 = insertDetails(cs,"lost");
+                Lid=lid7;
                 PreparedStatement pst7 = con.prepareStatement("insert into Childstuff values(?,?)");
                 pst7.setInt(1,lid7);
                 pst7.setString(2,cs.brand);
@@ -312,6 +340,7 @@ public class Main {
             case 8:eyeAndVision ev = new eyeAndVision();
             ev.setDetails();
                 int lid8 = insertDetails(ev,"lost");
+                Lid=lid8;
                 PreparedStatement pst8 = con.prepareStatement("insert into eyeAndvision values(?,?,?)");
                 pst8.setInt(1,lid8);
                 pst8.setString(2,ev.FrameType);
@@ -323,6 +352,7 @@ public class Main {
             case 9:Keys k = new Keys();
             k.setDetails();
                 int lid9 = insertDetails(k,"lost");
+                Lid=lid9;
                 PreparedStatement pst9 = con.prepareStatement("insert into KeyAccess values(?,?,?)");
                 pst9.setInt(1,lid9);
                 pst9.setString(2,k.keyType);
@@ -465,6 +495,7 @@ public class Main {
                     DoublyLinkedList list1 =  new DoublyLinkedList();
                     String sql = "SELECT \n" +
                             "    l.uid, \n" +
+                            "    l.id,  \n"+
                             "    l.name, \n" +
                             "    l.area, \n" +
                             "    l.date, \n" +
@@ -495,6 +526,7 @@ public class Main {
                     DoublyLinkedList list2=  new DoublyLinkedList();
                     String sql2 = "SELECT \n" +
                             "    l.uid, \n" +
+                            "    l.id,  \n"+
                             "    l.name, \n" +
                             "    l.area, \n" +
                             "    l.date, \n" +
@@ -531,6 +563,7 @@ public class Main {
                     DoublyLinkedList list3 =  new DoublyLinkedList();
                     String sql3 = "SELECT \n" +
                             "    l.uid, \n" +
+                            "    l.id,  \n"+
                             "    l.name, \n" +
                             "    l.area, \n" +
                             "    l.date, \n" +
@@ -559,6 +592,7 @@ public class Main {
                     DoublyLinkedList list4 =  new DoublyLinkedList();
                     String sql4 = "SELECT \n" +
                             "    l.uid, \n" +
+                            "    l.id,  \n"+
                             "    l.name, \n" +
                             "    l.area, \n" +
                             "    l.date, \n" +
@@ -588,6 +622,7 @@ public class Main {
                     DoublyLinkedList list5 =  new DoublyLinkedList();
                     String sql5 = "SELECT \n" +
                             "    l.uid, \n" +
+                            "    l.id,  \n"+
                             "    l.name, \n" +
                             "    l.area, \n" +
                             "    l.date, \n" +
@@ -616,6 +651,7 @@ public class Main {
                     DoublyLinkedList list6 =  new DoublyLinkedList();
                     String sql6 = "SELECT \n" +
                             "    l.uid, \n" +
+                            "    l.id,  \n"+
                             "    l.name, \n" +
                             "    l.area, \n" +
                             "    l.date, \n" +
@@ -645,6 +681,7 @@ public class Main {
                     DoublyLinkedList list7 =  new DoublyLinkedList();
                     String sql7 = "SELECT \n" +
                             "    l.uid, \n" +
+                            "    l.id,  \n"+
                             "    l.name, \n" +
                             "    l.area, \n" +
                             "    l.date, \n" +
@@ -673,6 +710,7 @@ public class Main {
                     DoublyLinkedList list8 =  new DoublyLinkedList();
                     String sql8 = "SELECT \n" +
                             "    l.uid, \n" +
+                            "    l.id,  \n"+
                             "    l.name, \n" +
                             "    l.area, \n" +
                             "    l.date, \n" +
@@ -703,6 +741,7 @@ public class Main {
                     DoublyLinkedList list9 =  new DoublyLinkedList();
                     String sql9 = "SELECT \n" +
                             "    l.uid, \n" +
+                            "    l.id,  \n"+
                             "    l.name, \n" +
                             "    l.area, \n" +
                             "    l.date, \n" +
@@ -741,7 +780,11 @@ public class Main {
     public static void main(String[] args) throws Exception {
         System.out.println("Welcome to the lost and found Managment System ");
         if(roleIdentification()){
-            System.out.println("Hoo");
+            System.out.println("Thanks for Using our System");
+        }
+        else{
+            Admin a = new Admin();
+            a.startProcedure();
         }
         //User Login-User side function embedded in nested methods one after one in this method;
 
@@ -1033,7 +1076,7 @@ class DoublyLinkedList{
             case "electronics":
                 Electronics e = (Electronics) subject;
                 float brandScore1 = match.compare(e.brand,temp.record.get("brand"));
-                float modelScore = match.compare(e.model,temp.record.get("Model"));
+                float modelScore = match.compare(e.model,temp.record.get("model"));
                 if((brandScore1+modelScore)>=1.3){
                     finalFilter.insertAtLast(temp.record);
                 }
@@ -1106,9 +1149,27 @@ class DoublyLinkedList{
        return first!=null;
     }
 
-    public void setAdminVerification(int LostUserid,Item subject) {
-        //History and flagging
-        //Photo and metadata
+    public void setAdminVerification(int lid,int LostUserID) throws SQLException {
+        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
+        Node temp = first;
+        while (temp!=null){
+            int id = Integer.parseInt(temp.record.get("Id"));
+           String sql1 = "update lostAndFound set status = 'Under Verification' where id = "+id;
+           String sql2 = "update lostAndFound set status = 'Under Verification' where id = "+lid;
+            String sql3 = "INSERT INTO adminverification(lostUserID, lostId, foundUserID, fid, status) VALUES ("
+                    + LostUserID + ", "
+                    + lid + ", "
+                    + temp.record.get("uid") + ", "
+                    + id+ ", 'Pending')";
+            temp=temp.next;
+           Statement st = con.createStatement();
+           int r1 = st.executeUpdate(sql1);
+           int r2 = st.executeUpdate(sql2);
+            System.out.println("cleared till here");
+           int r3 = st.executeUpdate(sql3);
+           if(r1>0&&r2>0)
+               System.out.println("Status updated");
+        }
     }
 
     class Node{
@@ -1141,6 +1202,182 @@ class DoublyLinkedList{
         while (temp!=null){
             System.out.println(temp.record);
             temp=temp.next;
+        }
+    }
+}
+class Admin {
+    public String username_admin;
+    public String name_admin;
+    public String email_admin;
+    public String password;
+    public Long contactno;
+    private final String systempass = "admin123";
+    Connection con;
+    Scanner sc = new Scanner(System.in);
+    Admin() throws SQLException {
+        con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
+    }
+    public void startProcedure() throws SQLException {
+        Scanner sc = new Scanner(System.in);
+        boolean loginCheck = true;
+
+        while (loginCheck) {
+            System.out.println("Are you a new admin or a registered admin?");
+            System.out.print("Type 'new' or 'registered': ");
+            String choice = sc.nextLine().trim().toLowerCase();
+
+            switch (choice) {
+                case "new":
+                    System.out.print("Enter default system password: ");
+                    String inputPass = sc.nextLine();
+
+                    if (inputPass.equals(systempass)) {
+                        System.out.println("System password verified. Proceeding with registration...");
+                        adminregistration();
+                        loginCheck = false;
+                        VerificationProcess();
+                    } else {
+                        System.out.println("Incorrect system password. Access denied.");
+                    }
+
+                    break;
+
+                case "registered":
+                    while (true) {
+                        boolean success = login();
+                        if (success) {
+                            System.out.println("Welcome back, admin.");
+                            loginCheck = false;
+                            VerificationProcess();
+                            break;
+                        } else {
+                            System.out.println("Login failed. Try again.");
+                        }
+                    }
+                    break;
+
+                default:
+                    System.out.println("Invalid input. Please choose 'new' or 'registered'.");
+            }
+        }
+    }
+    public void VerificationProcess() throws SQLException {
+        System.out.println("Match The attributes of Lost User and Found User and make your decision");
+        String sql ="select * from adminverification";
+        Statement st = con.createStatement();
+        ResultSet rs5 = st.executeQuery(sql);
+        int lostId,foundId,lostUserId,foundUserId;
+        while (rs5.next()) {
+            lostId = rs5.getInt(3);
+            foundId = rs5.getInt(5);
+            lostUserId = rs5.getInt(2);
+            foundUserId = rs5.getInt(4);
+
+            System.out.println("Do you want to verify this request?Enter yes if you wish to proceed else press any key for other requests");
+            String circumstance = sc.next();
+            if (circumstance.equalsIgnoreCase("yes")) {
+                Statement st1 = con.createStatement();
+                Statement st2 = con.createStatement();
+                String sql1 = "select attribute from lostandfound where id = " + lostId;
+                String sql2 = "select * from lostandfound where id = " + foundId;
+                ResultSet rs1 = st1.executeQuery(sql1);
+                ResultSet rs2 = st2.executeQuery(sql2);
+                while (rs1.next() && rs2.next()) {
+                    System.out.println("These are the details given by user who has lost the item:");
+                    System.out.println(rs1.getString(1));
+                    System.out.println("These are the details given by user who has found the item:");
+                    System.out.println(rs2.getString(1));
+                    System.out.println("Kindly make a decision. Press 1 to verify and 2 for denial ");
+                    int choice;
+                    while (true) {
+                        try {
+                            choice = sc.nextInt();
+                            break;
+                        } catch (Exception e) {
+                            System.out.println("Improper input. Try again");
+                            sc.next();
+                        }
+                    }
+                    if (choice == 1) {
+                        PreparedStatement pst1 = con.prepareStatement("update lostandfound set status = 'Verified' where id = " + lostId);
+                        PreparedStatement pst2 = con.prepareStatement("update lostandfound set status = 'Verified' where id = " + foundId);
+                        pst2.executeUpdate();
+                        pst1.executeUpdate();
+                        CallableStatement cst = con.prepareCall("call afterVerification(?,?)");
+                        cst.setInt(1,lostUserId);
+                        cst.setInt(2,foundUserId);
+                        cst.executeUpdate();
+                    }
+                }
+            }
+
+        }
+    }
+    public void adminregistration() {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter username: ");
+        username_admin = sc.nextLine();
+
+        System.out.print("Enter name: ");
+        name_admin = sc.nextLine();
+
+        System.out.print("Enter email: ");
+        email_admin = sc.nextLine();
+
+        System.out.print("Enter password: ");
+        password = sc.nextLine();
+
+        System.out.print("Enter contact number: ");
+        contactno = sc.nextLong();
+
+        String sql = "INSERT INTO admin (username_admin, name_admin, email_admin, password, contactno) VALUES ('"
+                + username_admin + "', '"
+                + name_admin + "', '"
+                + email_admin + "', '"
+                + password + "', "
+                + contactno + ")";
+
+        try {
+            Statement stmt = con.createStatement();
+            int rowsInserted = stmt.executeUpdate(sql);
+
+            if (rowsInserted > 0) {
+                System.out.println("Admin registered successfully.");
+            } else {
+                System.out.println("Registration failed.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error during registration: " + e.getMessage());
+        }
+    }
+    public boolean login() {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter name: ");
+        String inputName = sc.nextLine();
+
+        System.out.print("Enter password: ");
+        String inputPassword = sc.nextLine();
+
+        String sql = "SELECT * FROM admin WHERE name_admin = ? AND password = ?";
+
+        try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+            pstmt.setString(1, inputName);
+            pstmt.setString(2, inputPassword);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                System.out.println("Login successful.");
+                return true;
+            } else {
+                System.out.println("Invalid name or password.");
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error during login: " + e.getMessage());
+            return false;
         }
     }
 }
