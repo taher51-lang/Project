@@ -1,78 +1,11 @@
-import org.simmetrics.StringMetric;
-import org.simmetrics.metrics.JaroWinkler;
-
+package Main;
 import java.io.*;
 import java.sql.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Function;
-class Tree{
-    class Node{
-        Node right;
-        Node left;
-        String data;
-        Node(String data){
-            this.data = data;
-            left = null;
-            right = null;
-        }
-    }
-    Node root = null;
-    Boolean searchTree(String subject){
-        Node temp = root;
-        if(root==null)
-            return false;
-        else{
-            while (temp!=null){
-                int result = subject.compareTo(temp.data);
-                if(result==0)
-                    return true;
-                else if (result<0) {
-                    temp=temp.left;
-                }
-                else{
-                    temp=temp.right;
-                }
-            }
-        }
-        return false;
-    }
-    boolean insert(String subject){
-        Node n = new Node(subject);
-        if(root==null)
-            root=n;
-        else{
-            Node temp = root;
-            boolean duplicate = !searchTree(subject);
-            if(searchTree(subject)){
-                System.out.println("The username is already taken!! Kindly choose a different one");
-                return true;
-            }
-            while (duplicate&&temp!=null){
-                if(temp.left==null&&temp.data.compareTo(subject)<0){
-                    temp.left = n;
-                    return false;
-                }
-                else if(temp.right==null&&temp.data.compareTo(subject)>0){
-                    temp.right=n;
-                    return false;
-                }
-                else{
-                    if(subject.compareTo(temp.data)<0)
-                        temp=temp.left;
-                    else
-                        temp=temp.right;
-                }
-            }
-        }
-        return false;
-    }
-}
-
+import org.mindrot.jbcrypt.BCrypt;
 public class Main {
     static Connection con;
     static Scanner sc = new Scanner(System.in);
@@ -84,8 +17,8 @@ public class Main {
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
         boolean adminOrUser = true;
         System.out.println("---Kindly choose your specific role");
-        System.out.println("---1.User");
-        System.out.println("---2.Admin");
+        System.out.println("---1.Main.User");
+        System.out.println("---2.Main.Admin");
         int role = 0;
         boolean condition1 =true;
         while (condition1) {
@@ -101,7 +34,7 @@ public class Main {
             switch (role) {
                 case 1:
                     condition2=false;
-                    System.out.println("Enter 1 if you are a Registered User and 2 if you are a new user");
+                    System.out.println("Enter 1 if you are a Registered Main.User and 2 if you are a new user");
                     boolean temp = true;
                     while (temp) {
                         try {
@@ -128,7 +61,6 @@ public class Main {
                                 break;
                         }
                     }
-
                     break;
                 case 2:
                     condition2=false;
@@ -158,14 +90,19 @@ public class Main {
         sc.nextLine();
         System.out.println("Enter your password");
         String pass= sc.next();
-        String sql="Select userId,name from user where user_Name='"+userName+"' and user_pass='"+pass+"'";
+        String sql="Select userId,name,user_pass from user where user_Name='"+userName+"'";
         Statement st= con.createStatement();
         ResultSet rs= st.executeQuery(sql);
         if(rs.next()){
             id = rs.getInt(1);
-            System.out.println("Hi "+rs.getString(2)+"!!");
-            System.out.println("you have logged in successfully!");
-            return true;
+            String storedHash = rs.getString(3);
+            if (BCrypt.checkpw(pass, storedHash)) {
+                System.out.println("Hi "+rs.getString(2)+"!!");
+                System.out.println("you have logged in successfully!");
+                return true;
+            } else {
+                return false;
+            }
         }
         return false;
     }
@@ -188,7 +125,7 @@ public class Main {
             case 1:  Item subject = Lost();
             DoublyLinkedList stage1 = search(subject);
             if(stage1==null){
-                System.out.println("No such Item detected. Kindly login again to proceed");
+                System.out.println("No such Main.Item detected. Kindly login again to proceed");
                 System.exit(0);
             }
             stage1.display();
@@ -197,7 +134,7 @@ public class Main {
             if(stage3.exists()){
                 stage3.display();
                 System.out.println("We have found a Match in accordance to your Specifications.");
-                System.out.println("Your request is in Admin verification and you may get contacted for more details via email.");
+                System.out.println("Your request is in Main.Admin verification and you may get contacted for more details via email.");
                 System.out.println("The whole process might take upto a week to complete.");
                 stage3.setAdminVerification(Lid,id);
             }
@@ -242,8 +179,9 @@ public class Main {
 
      public static int insertDetails(Item e,String status) throws SQLException, FileNotFoundException {
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
-        String sql = "INSERT INTO Lostandfound(uid, name, area, date, color, attribute, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Lostandfound(uid, name, area, date, color, attribute, status, plocation) VALUES (?, ?, ?, ?, ?, ?, ?,?)";
          PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+         String location[] = e.area.split(",");
             ps.setInt(1, id);
             ps.setString(2, e.name);
             ps.setString(3, e.area);
@@ -251,6 +189,7 @@ public class Main {
             ps.setString(5, e.color);
             ps.setString(6, e.attribute);
             ps.setString(7, status);
+            ps.setString(8, location[location.length-1]);
             System.out.println("Do you have an image of the subject?Enter yes for uploading else press any key.");
             String imageChoice = sc.next();
             if(imageChoice.equalsIgnoreCase("yes")){
@@ -272,16 +211,16 @@ public class Main {
     }
     public static void getItems(){
         System.out.println(
-                "1. Electronics & Gadgets"+
+                "1. Main.Electronics & Gadgets"+
                    "(Mobile phones, tablets, laptops, cameras, chargers, earphones etc)\n"+
 
-                "2. Bags & Carriers"+
+                "2. Main.Bags & Carriers"+
                    "(Suitcases, backpacks, laptop bags, tote bags)\n"+
 
-               "3. Clothing & Accessories"+
+               "3. Clothing & Main.Accessories"+
                   " (Jackets, scarves, gloves, caps, jewelry, watches)\n"+
 
-                "4. Identity & Documents "+
+                "4. Identity & Main.Documents "+
                    "(ID cards, passports, licenses, student cards, certificates)\n"+
 
                 "5. Academic Supplies"+
@@ -296,7 +235,7 @@ public class Main {
                 "8. Eyewear & Vision Aids"+
                    "(Glasses, sunglasses, contact lens kits)\n"+
 
-                "9. Keys & Access Devices"+
+                "9. Main.Keys & Access Devices"+
                    "(House keys, car keys, RFID tags, access cards)\n");
 
 
@@ -352,7 +291,7 @@ public class Main {
             d.setDetails();
             int lid4 = insertDetails(d,"lost");
             Lid=lid4;
-            PreparedStatement pst4 = con.prepareStatement("insert into Documents values(?,?)");
+            PreparedStatement pst4 = con.prepareStatement("insert into Main.Documents values(?,?)");
             pst4.setInt(1,lid4);
             pst4.setString(2,d.issueAuthority);
             pst4.executeUpdate();
@@ -362,7 +301,7 @@ public class Main {
             s.setDetails();
                 int lid5 = insertDetails(s,"lost");
                 Lid=lid5;
-                PreparedStatement pst5 = con.prepareStatement("insert into AcademicSupplies values(?,?)");
+                PreparedStatement pst5 = con.prepareStatement("insert into Main.AcademicSupplies values(?,?)");
                 pst5.setInt(1,lid5);
                 pst5.setString(2,s.brand);
                 pst5.executeUpdate();
@@ -464,7 +403,7 @@ public class Main {
             case 4:Documents d = new Documents();
                 d.setDetails();
                 int lid4 = insertDetails(d,"found");
-                PreparedStatement pst4 = con.prepareStatement("insert into Documents values(?,?)");
+                PreparedStatement pst4 = con.prepareStatement("insert into Main.Documents values(?,?)");
                 pst4.setInt(1,lid4);
                 pst4.setString(2,d.issueAuthority);
                 pst4.executeUpdate();
@@ -472,7 +411,7 @@ public class Main {
             case 5:AcademicSupplies s = new AcademicSupplies();
                 s.setDetails();
                 int lid5 = insertDetails(s,"found");
-                PreparedStatement pst5 = con.prepareStatement("insert into AcademicSupplies values(?,?)");
+                PreparedStatement pst5 = con.prepareStatement("insert into Main.AcademicSupplies values(?,?)");
                 pst5.setInt(1,lid5);
                 pst5.setString(2,s.brand);
                 pst5.executeUpdate();
@@ -517,7 +456,7 @@ public class Main {
                 found();
                 break;
         }
-        System.out.println("Thanks for reporting The lost Item. We are thankful for your support. You will soon be rewarded for your efforts");
+        System.out.println("Thanks for reporting The lost Main.Item. We are thankful for your support. You will soon be rewarded for your efforts");
     }
     public static String getSubjectInstance(Item subject){
         Map<Class<?>, Function<Object, String>> handlers = new HashMap<>();
@@ -543,7 +482,7 @@ public class Main {
             String result =getSubjectInstance(subject);
             Statement st = con.createStatement();
             switch(result){
-                case "Electronics":
+                case "Main.Electronics":
                     DoublyLinkedList list1 =  new DoublyLinkedList();
                     String sql = "SELECT \n" +
                             "    l.uid, \n" +
@@ -573,7 +512,7 @@ public class Main {
                     }
                     returnable = list1;
                     break;
-                case "Bags":
+                case "Main.Bags":
                     System.out.println("s2 cleared");
                     DoublyLinkedList list2=  new DoublyLinkedList();
                     String sql2 = "SELECT \n" +
@@ -611,7 +550,7 @@ public class Main {
                     }
                     returnable = list2;
                     break;
-                case "Accessories":
+                case "Main.Accessories":
                     DoublyLinkedList list3 =  new DoublyLinkedList();
                     String sql3 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -640,7 +579,7 @@ public class Main {
                     }
                     returnable = list3;
                     break;
-                case "AcademicSupplies":
+                case "Main.AcademicSupplies":
                     DoublyLinkedList list4 =  new DoublyLinkedList();
                     String sql4 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -654,7 +593,7 @@ public class Main {
                             "FROM \n" +
                             "    LostAndfound l\n" +
                             "JOIN \n" +
-                            "    AcademicSupplies e ON l.id = e.id\n" +
+                            "    Main.AcademicSupplies e ON l.id = e.id\n" +
                             "WHERE \n" +
                             "    l.status = 'found'\n" +
                             "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
@@ -670,7 +609,7 @@ public class Main {
                     //needs improvement
                     returnable = list4;
                     break;
-                case "Documents":
+                case "Main.Documents":
                     DoublyLinkedList list5 =  new DoublyLinkedList();
                     String sql5 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -684,7 +623,7 @@ public class Main {
                             "FROM \n" +
                             "    LostAndfound l\n" +
                             "JOIN \n" +
-                            "    Documents e ON l.id = e.id\n" +
+                            "    Main.Documents e ON l.id = e.id\n" +
                             "WHERE \n" +
                             "    l.status = 'found'\n" +
                             "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
@@ -699,7 +638,7 @@ public class Main {
                     }
                     returnable = list5;
                     break;
-                case "ChildStuff":
+                case "Main.ChildStuff":
                     DoublyLinkedList list6 =  new DoublyLinkedList();
                     String sql6 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -758,7 +697,7 @@ public class Main {
                     }
                     returnable = list7;
                     break;
-                case "eyeAndVision":
+                case "Main.eyeAndVision":
                     DoublyLinkedList list8 =  new DoublyLinkedList();
                     String sql8 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -774,7 +713,7 @@ public class Main {
                             "FROM \n" +
                             "    LostAndfound l\n" +
                             "JOIN \n" +
-                            "    eyeAndVision e ON l.id = e.id\n" +
+                            "    Main.eyeAndVision e ON l.id = e.id\n" +
                             "WHERE \n" +
                             "    l.status = 'found'\n" +
                             "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
@@ -789,7 +728,7 @@ public class Main {
                     }
                     returnable = list8;
                     break;
-                case "Keys":
+                case "Main.Keys":
                     DoublyLinkedList list9 =  new DoublyLinkedList();
                     String sql9 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -838,675 +777,9 @@ public class Main {
             Admin a = new Admin();
             a.startProcedure();
         }
-        //User Login-User side function embedded in nested methods one after one in this method;
+        //Main.User Login-Main.User side function embedded in nested methods one after one in this method;
 
     }
 }
-class User{
-    static Connection con;
-    static Scanner sc = new Scanner(System.in);
-    public static boolean isEmailLike(String input) {
-        return input != null && input.contains("@");
-    }
-    static void registration() throws ClassNotFoundException, SQLException {
-        String driverName = "com.mysql.cj.jdbc.Driver";
-        Class.forName(driverName);
-        System.out.println("Driver installed");
-        String dbUrl = "jdbc:mysql://localhost:3306/Project"; //changed part
-        String dbUser = "root";
-        String dpPass = "";
-        con = DriverManager.getConnection(dbUrl,dbUser,dpPass);
-        String sql = "select user_name from user";
-        PreparedStatement pst = con.prepareStatement(sql);
-        ResultSet rs = pst.executeQuery();
-        Tree Users = new Tree();
-        while (rs.next()){
-            Users.insert(rs.getString(1));
-        }
-        System.out.println("----Follow the steps to register yourself ");
-        System.out.println("Enter your name");
-        String Name = sc.nextLine();//Code to be made more readable and maintable using getemail,getname etc
-        System.out.println("Create a username for your profile");
-        String username = sc.next();
-        while (Users.insert(username)){
-            username=sc.next();
-        }
-        System.out.println("Create new password(Minimun length 5)");
-        String pass = sc.next();
-       while (true){
-           if (pass.length()>=5){
-               break;
-           }
-           else{
-               System.out.println("Enter password again");
-               pass=sc.next();
-           }
-       }
-        System.out.println("Enter your mobile No(It must start with 8  or 9)");
-        long mobileNo = 0;
-        boolean temp=true;
-        while (temp){
-            try{
-                mobileNo=sc.nextLong();
-                if(mobileNo<=9999999999L&&mobileNo>7999999999L){
-                    temp=false;
-                }else{
-                    System.out.println("invalid input");
-                }
-            }
-            catch (RuntimeException e) {
-                System.out.println("Enter numeric input");
-                sc.nextLine();
-            }
-        }
-        System.out.println("Enter your email address");
-        String email_id = sc.next();
-        while (!isEmailLike(email_id)){
-            System.out.println("Incorrect emailID");
-            email_id= sc.next();
-        }
-        Statement st = con.createStatement();
-        String sql1 = "INSERT INTO user(user_name, Name, mobileNo, email_id, user_pass) VALUES (?, ?, ?, ?, ?)";
-        PreparedStatement stmt = con.prepareStatement(sql1);
-        stmt.setString(1, username);
-        stmt.setString(2, Name);
-        stmt.setLong(3, mobileNo);
-        stmt.setString(4, email_id);
-        stmt.setString(5, pass);
-        stmt.executeUpdate();
-        String sql2="Select userId,name from user where user_Name='"+username+"'";
-        Statement st2 = con.createStatement();
-        ResultSet rs2= st2.executeQuery(sql2);
-        if(rs2.next())
-            Main.id = rs2.getInt(1);
-    }
-}
-class Item {
-    Scanner sc = new Scanner(System.in);
-    String name;
-    String area;
-    LocalDate date;
-    String color;
-    String attribute;
-    public void setName() {
-        name = sc.nextLine();
-    }
 
-    public void setArea() {
-        System.out.println("Enter the area it might have lost/found");
-        area = sc.nextLine();
-    }
-    public void setDate() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        while (true) {
-            System.out.print("Enter the date when it got lost/found (yyyy-MM-dd): ");
-            String input = sc.nextLine().trim();
-
-            try {
-                date = LocalDate.parse(input, formatter);
-                System.out.println("You entered: " + date);
-                break; // Exit loop once valid date is entered
-            } catch (DateTimeParseException e) {
-                System.out.println("❌ Invalid format. Please use yyyy-MM-dd (e.g., 2025-08-18).");
-            }
-        }
-    }
-
-    public void setColor() {
-        System.out.println("Enter the color of the lost/found thing");
-        color = sc.nextLine();
-    }
-    public void setAttribute() {
-        System.out.println("Describe any unique quality of your lost/found item that helps the system to validate its rightful owner");
-        attribute =sc.nextLine();
-    }
-}
-class Electronics extends Item{
-    public String getClassName() {
-        return "Electronics";
-    }
-   String model;
-   String brand;
-    public void setBrand() {
-        System.out.println("Enter the brand of the lost/found item if any");
-        brand = sc.nextLine();
-    }
-   public void setDetails(){
-       System.out.println("Enter the device category(e.g Laptop, Mobile , Power bank etc) ");
-       setName();setDate();setArea();setBrand();setColor();
-       System.out.println("Enter the model of the electronic device e.g(Dell series laptop:Inspiron 3511)");
-       model=sc.nextLine();
-       setAttribute();
-   }
-}
-class Bags extends Item{
-    public String getClassName() {
-        return "Bags";
-    }
-  String material;
-    String brand;
-    public void setBrand() {
-        System.out.println("Enter the brand of the lost/found item if any");
-        brand = sc.nextLine();
-    }
-  public void setDetails(){
-      System.out.println("Enter the category of bag: e.g(shoulder bag,suitcase etc)");
-      setName();setDate();setArea();setBrand();setColor();
-      System.out.println("Enter the material of the  bag");
-      material=sc.nextLine();
-      setAttribute();
-  }
-}
-class Accessories extends Item{
-    public String getClassName() {
-        return "Accessories";
-    }
-    String brand;
-    public void setBrand() {
-        System.out.println("Enter the brand of the  item if any");
-        brand = sc.nextLine();
-    }
-    String material;
-    public void setDetails(){
-        System.out.println("Enter the type of Accessory . e.g(Watch,cloth type(jacket,sweater) etc)");
-        setName();setDate();setArea();setBrand();setColor();
-        System.out.println("Enter the material of the  item:(In one word)");
-        material= sc.next();
-        setAttribute();
-    }
-}
-class Documents extends Item{
-    public String getClassName() {
-        return "Documents";
-    }
-    String issueAuthority;
-    public void setDetails(){
-        System.out.println("Enter the name of Document . e.g(Aadhar card,Pan card etc)");
-        setName();setDate();setArea();setColor();
-        System.out.println("Specify The issuing authority of the lost Document");
-        issueAuthority=sc.nextLine();
-        setAttribute();
-    }
-}
-class AcademicSupplies extends Item {
-    public String getClassName() {
-        return "AcademicSupplies";
-    }
-    String brand;
-    public void setBrand() {
-        System.out.println("Enter the brand of the lost item if any");
-        brand = sc.nextLine();
-    }
-    public void setDetails() {
-        System.out.println("Enter the name of the lost item.e.g(Notebooks,Educational equipments)");
-        name = sc.nextLine();
-        setDate();
-        setArea();
-        setBrand();
-        setColor();
-        setAttribute();
-    }
-}
-class EntertainmentsGears extends Item{
-    public String getClassName() {
-        return "EntertainmentGears";
-    }
-    String brand;
-    public void setBrand() {
-        System.out.println("Enter the brand of the lost item if any");
-        brand = sc.nextLine();
-    }
-    public void setDetails() {
-        System.out.println("Enter the name of the lost item.e.g(Musical Instruments,sports equipments)");
-        name = sc.nextLine();
-        setDate();
-        setArea();
-        setBrand();
-        setColor();
-        setAttribute();
-    }
-}
-class ChildStuff extends Item {
-    public String getClassName() {
-        return "ChildStuff";
-    }
-    String brand;
-    public void setBrand() {
-        System.out.println("Enter the brand of the lost item if any");
-        brand = sc.nextLine();
-    }
-public void setDetails(){
-    System.out.println("Enter the name of the lost item.e.g(Baby stroller,Toys)");
-    name = sc.nextLine();
-    setDate();
-    setArea();
-    setBrand();
-    setColor();
-    setAttribute();
-}
-}
-class eyeAndVision extends Item{
-String FrameType;
-String lensGrade;
-    String brand;
-    public void setBrand() {
-        System.out.println("Enter the brand of the lost item if any");
-        brand = sc.nextLine();
-    }
-    public void setDetails(){
-        name = "lens";
-        setDate();
-        setArea();
-        setBrand();
-        setColor();
-        setAttribute();
-        System.out.println("Specify the Frame type of the lens(e.g Full rim,Half rim)");
-        FrameType=sc.nextLine();
-        System.out.println("Specify Lens Grade. e.g(Polymer,Glass)");
-        lensGrade=sc.nextLine();
-    }
-
-    public String getClassName() {
-        return "eyeAndVision";
-    }
-}
-class Keys extends Item {
-
-    String keyType;
-    String brand;
-    public void setBrand() {
-        System.out.println("Enter the brand of the lost key if any(Written on the key.)");
-        brand = sc.nextLine();
-    }
-    public void setDetails() {
-        name = "keys";
-        setDate();
-        setArea();
-        setBrand();
-        setColor();
-        System.out.println("Specify the type of key you have lost(Vehicle keys,Lock keys etc)");
-        keyType = sc.nextLine();
-        setAttribute();
-    }
-    public String getClassName() {
-        return "Keys";
-    }
-}
-class DoublyLinkedList{
-    public DoublyLinkedList flFilter(Item subject) {
-        DoublyLinkedList filter = new DoublyLinkedList();
-        Node temp = first;
-        while (temp!=null){
-            StringMetric a = new JaroWinkler();
-            float scoreName = a.compare(temp.record.get("name"), subject.name);
-            float scoreAddress =  a.compare(temp.record.get("area"), subject.area);
-            float scorecolor = a.compare(temp.record.get("color"), subject.color);
-            float sum = scorecolor+scoreAddress+scoreName;
-            if(sum>=1.95) {
-                filter.insertAtLast(temp.record);
-            }
-                temp=temp.next;
-        }
-        return filter;
-    }
-
-    public DoublyLinkedList filterMoreAttributes(Item subject, String result) {
-        Node temp = first;
-        StringMetric match = new JaroWinkler();
-        DoublyLinkedList finalFilter = new DoublyLinkedList();
-        while (temp!=null){
-        switch (result.toLowerCase()) {
-            case "electronics":
-                Electronics e = (Electronics) subject;
-                float brandScore1 = match.compare(e.brand,temp.record.get("brand"));
-                float modelScore = match.compare(e.model,temp.record.get("model"));
-                if((brandScore1+modelScore)>=1.3){
-                    finalFilter.insertAtLast(temp.record);
-                }
-                break;
-            case "bags":
-                Bags b = (Bags) subject;
-                System.out.println(b.brand);
-                float MaterialScore = match.compare(b.material,temp.record.get("material"));
-                float brandScore2 = match.compare(b.brand,temp.record.get("brand"));
-                if((brandScore2+MaterialScore)>=1.3){
-                    finalFilter.insertAtLast(temp.record);
-                }
-                break;
-            case "accessories":
-                Accessories ac = (Accessories) subject;
-                float brandScore3 = match.compare(ac.brand,temp.record.get("brand"));
-                if(brandScore3>0.65){
-                    finalFilter.insertAtLast(temp.record);
-                }
-                break;
-                case "childstuff":
-                ChildStuff ch = (ChildStuff) subject;
-                float brandScore4 = match.compare(ch.brand,temp.record.get("brand"));
-                if(brandScore4>0.65){
-                    finalFilter.insertAtLast(temp.record);
-                }
-                break;
-                case "academicsupplies":
-                    AcademicSupplies as = (AcademicSupplies) subject;
-                    float brandScore5 = match.compare(as.brand,temp.record.get("brand"));
-                    if(brandScore5>0.65){
-                        finalFilter.insertAtLast(temp.record);
-                   }
-                break;
-                case "entertainmentgears":
-                    EntertainmentsGears et = (EntertainmentsGears) subject;
-                    float brandScore6 = match.compare(et.brand,temp.record.get("brand"));
-                    if(brandScore6>0.65){
-                       finalFilter.insertAtLast(temp.record);
-                   }
-                break;
-            case "keys":
-                Keys k = (Keys) subject;
-                float keyScore = match.compare(k.keyType,temp.record.get("keytype"));
-                float brandscore7 = match.compare(k.brand,temp.record.get("brand"));
-                if((brandscore7+keyScore)>=1.3)
-                    finalFilter.insertAtLast(temp.record);
-                break;
-            case "eyeandvision":
-                eyeAndVision ev = (eyeAndVision) subject;
-                float frameScore = match.compare(ev.FrameType,temp.record.get("frametype"));
-                float lensScore = match.compare(ev.lensGrade,temp.record.get("lensgrade"));
-                float brandScore8 = match.compare(ev.brand,temp.record.get("brand"));
-                if((frameScore+lensScore+brandScore8)>=1.95)
-                    finalFilter.insertAtLast(temp.record);
-                break;
-            case "documents":
-                Documents d = (Documents) subject;
-                float isScore = match.compare(d.issueAuthority,temp.record.get("issueauthority"));
-                if(isScore>0.65)
-                    finalFilter.insertAtLast(temp.record);
-                break;
-            }
-            temp=temp.next;
-        }
-        return finalFilter;
-    }
-
-    public boolean exists() {
-       return first!=null;
-    }
-
-    public void setAdminVerification(int lid,int LostUserID) throws SQLException {
-        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/Project", "root", "");
-        Node temp = first;
-        while (temp!=null){
-            int id = Integer.parseInt(temp.record.get("Id"));
-           String sql1 = "update lostAndFound set status = 'Under Verification' where id = "+id;
-           String sql2 = "update lostAndFound set status = 'Under Verification' wheremain id = "+lid;
-            String sql3 = "INSERT INTO adminverification(lostUserID, lostId, foundUserID, fid, status) VALUES ("
-                    + LostUserID + ", "
-                    + lid + ", "
-                    + temp.record.get("uid") + ", "
-                    + id+ ", 'Pending')";
-            temp=temp.next;
-           Statement st = con.createStatement();
-           int r1 = st.executeUpdate(sql1);
-           int r2 = st.executeUpdate(sql2);
-           int r3 = st.executeUpdate(sql3);
-           if(r1>0&&r2>0&&r3>0)
-               System.out.println("Status updated");
-        }
-    }
-
-    class Node{
-        Node prev;
-        Node next;
-        HashMap<String,String> record;
-        Node(HashMap<String,String> a){
-            record = a;
-            prev=null;
-            next=null;
-        }
-    }
-    Node first = null;
-    public  void insertAtLast(HashMap<String,String> a){
-        Node n = new Node(a);
-        if(first==null)
-            first=n;
-        else{
-            Node temp = first;
-            while (temp.next!=null){
-                temp=temp.next;
-            }
-            temp.next=n;
-            n.prev=temp;
-        }
-    }
-    public void display(){
-        Node temp = first;
-        System.out.println(first);
-        while (temp!=null){
-            System.out.println(temp.record);
-            temp=temp.next;
-        }
-    }
-}
-class Admin {
-    public String username_admin;
-    public String name_admin;
-    public String email_admin;
-    public String password;
-    public Long contactno;
-    private final String systempass = "admin123";
-    Connection con;
-    Scanner sc = new Scanner(System.in);
-    Admin() throws SQLException {
-        con = DriverManager.getConnection("jdbc:mysql://localhost:3306/Project", "root", "");
-    }
-    public void startProcedure() throws SQLException, IOException {
-        Scanner sc = new Scanner(System.in);
-        boolean loginCheck = true;
-
-        while (loginCheck) {
-            System.out.println("Are you a new admin or a registered admin?");
-            System.out.print("Type 'new' or 'registered': ");
-            String choice = sc.nextLine().trim().toLowerCase();
-
-            switch (choice) {
-                case "new":
-                    System.out.print("Enter default system password: ");
-                    String inputPass = sc.nextLine();
-
-                    if (inputPass.equals(systempass)) {
-                        System.out.println("System password verified. Proceeding with registration...");
-                        adminregistration();
-                        loginCheck = false;
-                        selectFromChoice();
-                    } else {
-                        System.out.println("Incorrect system password. Access denied.");
-                    }
-
-                    break;
-
-                case "registered":
-                    while (true) {
-                        boolean success = login();
-                        if (success) {
-                            System.out.println("Welcome back, admin.");
-                            loginCheck = false;
-                            selectFromChoice();
-                            break;
-                        } else {
-                            System.out.println("Login failed. Try again.");
-                        }
-                    }
-                    break;
-
-                default:
-                    System.out.println("Invalid input. Please choose 'new' or 'registered'.");
-            }
-        }
-    }
-
-     void selectFromChoice() throws SQLException, IOException {
-        System.out.println("Enter your choice from the following");
-        System.out.println("1.Verify and Analyse requests\n2.Generate and see Analysis report\n3.Exit");
-        int choice = 0;
-        boolean param = true;
-        while (param) {
-            try {
-                choice = sc.nextInt();
-            }
-            catch (Exception e){
-                System.out.println("Enter numeric input");
-                continue;
-            }
-            switch (choice){
-                case 1:verificationProcess();
-                    break;
-                case 2: generateReport();
-                    break;
-                case 3: System.exit(0);
-                default:
-                    System.out.println("Enter No between 1 and 3");
-                    continue;
-            }
-            param=false;
-        }
-    }
-
-    public void generateReport() {
-
-    }
-
-    public void verificationProcess() throws SQLException, IOException {
-        System.out.println("Match The attributes of Lost User and Found User and make your decision");
-        String sql ="select * from adminverification";
-        Statement st = con.createStatement();
-        ResultSet rs5 = st.executeQuery(sql);
-        ResultSetMetaData rsmd = rs5.getMetaData();
-        int lostId,foundId,lostUserId,foundUserId;
-        while (rs5.next()) {
-            lostId = rs5.getInt(3);
-            foundId = rs5.getInt(5);
-            lostUserId = rs5.getInt(2);
-            foundUserId = rs5.getInt(4);
-            System.out.println(rsmd.getColumnName(2) +"  "+rsmd.getColumnName(3)+"  "+rsmd.getColumnName(4)+"  "+rsmd.getColumnName(4));
-            System.out.println(lostUserId+"  "+lostId+"  "+foundUserId+"  "+foundId);
-            System.out.println("Do you want to verify this request?Enter yes if you wish to proceed else press any key for other requests");
-            String circumstance = sc.next();
-            if (circumstance.equalsIgnoreCase("yes")) {
-                Statement st1 = con.createStatement();
-                Statement st2 = con.createStatement();
-                String sql1 = "select attribute,image from lostandfound where id = " + lostId;
-                String sql2 = "select attribute,image from lostandfound where id = " + foundId;
-                ResultSet rs1 = st1.executeQuery(sql1);
-                ResultSet rs2 = st2.executeQuery(sql2);
-                while (rs1.next() && rs2.next()) {
-                    System.out.println("These are the details given by user who has lost the item:");
-                    System.out.println(rs1.getString(1));
-                    System.out.println("These are the details given by user who has found the item:");
-                    System.out.println(rs2.getString(1));
-                        Blob i1 = rs1.getBlob(2);
-                        Blob  i2= rs1.getBlob(2);
-                        if(i1!=null&&i2!=null){
-                        byte[] arr1 = i1.getBytes(1, (int) i1.length());
-                        byte[] arr2 = i2.getBytes(1, (int) i2.length());
-                        FileOutputStream fos1 = new FileOutputStream("D://" + "user1" + ".jpg");
-                        FileOutputStream fos2 = new FileOutputStream("D://" + "user2" + ".jpg");
-                        fos1.write(arr1);
-                        fos2.write(arr2);
-                        fos1.close();
-                        fos2.close();
-                    System.out.println("Images from both the users has been downloaded. Please analyse both");
-                        }
-                    System.out.println("Kindly make a decision. Press 1 to verify and 2 for denial ");
-                    int choice;
-                    while (true) {
-                        try {
-                            choice = sc.nextInt();
-                            break;
-                        } catch (Exception e) {
-                            System.out.println("Improper input. Try again");
-                        }
-                    }
-                    if (choice == 1) {
-                        PreparedStatement pst1 = con.prepareStatement("update lostandfound set status = 'Verified' where id = " + lostId);
-                        PreparedStatement pst2 = con.prepareStatement("update lostandfound set status = 'Verified' where id = " + foundId);
-                        pst2.executeUpdate();
-                        pst1.executeUpdate();
-                        CallableStatement cst = con.prepareCall("call afterVerification(?,?)");
-                        cst.setInt(1,lostUserId);
-                        cst.setInt(2,foundUserId);
-                        cst.executeUpdate();
-                    }
-                }
-            }
-
-        }
-    }
-    public void adminregistration() {
-        Scanner sc = new Scanner(System.in);
-
-        System.out.print("Enter username: ");
-        username_admin = sc.nextLine();
-
-        System.out.print("Enter name: ");
-        name_admin = sc.nextLine();
-
-        System.out.print("Enter email: ");
-        email_admin = sc.nextLine();
-
-        System.out.print("Enter password: ");
-        password = sc.nextLine();
-
-        System.out.print("Enter contact number: ");
-        contactno = sc.nextLong();
-
-        String sql = "INSERT INTO admin (username_admin, name_admin, email_admin, password, contactno) VALUES ('"
-                + username_admin + "', '"
-                + name_admin + "', '"
-                + email_admin + "', '"
-                + password + "', "
-                + contactno + ")";
-
-        try {
-            Statement stmt = con.createStatement();
-            int rowsInserted = stmt.executeUpdate(sql);
-
-            if (rowsInserted > 0) {
-                System.out.println("Admin registered successfully.");
-            } else {
-                System.out.println("Registration failed.");
-            }
-        } catch (SQLException e) {
-            System.out.println("Error during registration: " + e.getMessage());
-        }
-    }
-    public boolean login() {
-        Scanner sc = new Scanner(System.in);
-
-        System.out.print("Enter name: ");
-        String inputName = sc.nextLine();
-
-        System.out.print("Enter password: ");
-        String inputPassword = sc.nextLine();
-
-        String sql = "SELECT * FROM admin WHERE name_admin = ? AND password = ?";
-
-        try (PreparedStatement pstmt = con.prepareStatement(sql)) {
-            pstmt.setString(1, inputName);
-            pstmt.setString(2, inputPassword);
-
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                System.out.println("Login successful.");
-                return true;
-            } else {
-                System.out.println("Invalid name or password.");
-                return false;
-            }
-        } catch (SQLException e) {
-            System.out.println("Error during login: " + e.getMessage());
-            return false;
-        }
-    }
-}
