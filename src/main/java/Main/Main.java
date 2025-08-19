@@ -17,8 +17,8 @@ public class Main {
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
         boolean adminOrUser = true;
         System.out.println("---Kindly choose your specific role");
-        System.out.println("---1.Main.User");
-        System.out.println("---2.Main.Admin");
+        System.out.println("---1.User");
+        System.out.println("---2.Admin");
         int role = 0;
         boolean condition1 =true;
         while (condition1) {
@@ -34,7 +34,7 @@ public class Main {
             switch (role) {
                 case 1:
                     condition2=false;
-                    System.out.println("Enter 1 if you are a Registered Main.User and 2 if you are a new user");
+                    System.out.println("Enter 1 if you are a Registered User and 2 if you are a new user");
                     boolean temp = true;
                     while (temp) {
                         try {
@@ -108,51 +108,86 @@ public class Main {
     }
     static void LostAndFoundProcess() throws SQLException, FileNotFoundException {
         System.out.println("Enter your choice from the following :");
-        System.out.println("1.Report lost item\n2.Report found item\n3.See Rewards\n4.See admin response\n5.Exit");
+        System.out.println("1.Report lost item\n2.Report found item\n3.See Rewards\n4.See admin response\n5.See Recovery rate\n6.See average Recovery time\n7.Lost hotspot areas\n8.Exit");
         boolean checkInput = true;
         int choice = 0;
-        while (checkInput){
-            try{
-                choice=sc.nextInt();
-            } 
-            catch (Exception e) {
+        while (checkInput) {
+            try {
+                choice = sc.nextInt();
+            } catch (Exception e) {
                 System.out.println("Enter numeric input");
+                sc.next();
                 continue;
             }
-            checkInput=false;
-        }
-        switch (choice){
-            case 1:  Item subject = Lost();
-            DoublyLinkedList stage1 = search(subject);
-            if(stage1==null){
-                System.out.println("No such Main.Item detected. Kindly login again to proceed");
-                System.exit(0);
-            }
-            stage1.display();
-            DoublyLinkedList stage2 = filterName_location_color(stage1,subject);//Name and location and color
-            DoublyLinkedList stage3 = filterAdditionals(stage2,subject);
-            if(stage3.exists()){
-                stage3.display();
-                System.out.println("We have found a Match in accordance to your Specifications.");
-                System.out.println("Your request is in Main.Admin verification and you may get contacted for more details via email.");
-                System.out.println("The whole process might take upto a week to complete.");
-                stage3.setAdminVerification(Lid,id);
-            }
-            else{
-                System.out.println("No such item has been found");
-                System.out.println("Please scan again after some time");
-            }
-            break;
-            case 2: found();
-            break;
-            case 3: seeRewards(id);break;
-            case 4:seeAdminResponse(id);
-            case 5:System.exit(0);
-            default:
+            checkInput = false;
 
-                System.out.println("Enter between 1 to 5");
-            break;
+            switch (choice) {
+                case 1:
+                    Item subject = Lost();
+                    DoublyLinkedList stage1 = search(subject);
+                    if (stage1 == null) {
+                        System.out.println("No such Item detected. Kindly login again to proceed");
+                        System.exit(0);
+                    }
+                    stage1.display();
+                    DoublyLinkedList stage2 = filterName_location_color(stage1, subject);//Name and location and color
+                    DoublyLinkedList stage3 = filterAdditionals(stage2, subject);
+                    if (stage3.exists()) {
+                        stage3.display();
+                        System.out.println("We have found a Match in accordance to your Specifications.");
+                        System.out.println("Your request is in Admin verification and you may get contacted for more details via email.");
+                        System.out.println("The whole process might take upto a week to complete.");
+                        stage3.setAdminVerification(Lid, id);
+                        addBalance();
+                    } else {
+                        System.out.println("No such item has been found");
+                    }
+                    break;
+                case 2:
+                    found();
+                    break;
+                case 3:
+                    seeRewards(id);
+                    break;
+                case 4:
+                    seeAdminResponse(id);
+                    break;
+                case 5:
+                    RecoveryRate();
+                    break;
+                case 6:
+                    RecoveryTime();
+                    break;
+                case 7:
+                    lossHotspot();
+                    break;
+                case 8:
+                    System.exit(0);
+                    break;
+                default:
+                    System.out.println("Enter between 1 to 8");
+                    checkInput=true;
+                    break;
+            }
         }
+    }
+
+    public static void addBalance() throws SQLException {
+        System.out.println("Kindly add a Minimum of Rs 250. This will be deducted and given as reward to the person who found and took care of your lost item");
+        int funds = sc.nextInt();
+        PreparedStatement pst = con.prepareStatement("update user set Wallet = ? where userid = ? ");
+        pst.setInt(1,funds);
+        pst.setInt(2,id);
+        pst.executeUpdate();
+    }
+
+    public static void RecoveryTime() throws SQLException {
+        CallableStatement cs = con.prepareCall("{call avgRecoveryTime(?)}");
+        cs.registerOutParameter(1, java.sql.Types.INTEGER); // Register OUT param
+        cs.execute();
+        int avg = cs.getInt(1); // Retrieve OUT param
+        System.out.println("Average recovery time: " + avg);// Now this should work
+
     }
 
 
@@ -291,7 +326,7 @@ public class Main {
             d.setDetails();
             int lid4 = insertDetails(d,"lost");
             Lid=lid4;
-            PreparedStatement pst4 = con.prepareStatement("insert into Main.Documents values(?,?)");
+            PreparedStatement pst4 = con.prepareStatement("insert into Documents values(?,?)");
             pst4.setInt(1,lid4);
             pst4.setString(2,d.issueAuthority);
             pst4.executeUpdate();
@@ -301,7 +336,7 @@ public class Main {
             s.setDetails();
                 int lid5 = insertDetails(s,"lost");
                 Lid=lid5;
-                PreparedStatement pst5 = con.prepareStatement("insert into Main.AcademicSupplies values(?,?)");
+                PreparedStatement pst5 = con.prepareStatement("insert into AcademicSupplies values(?,?)");
                 pst5.setInt(1,lid5);
                 pst5.setString(2,s.brand);
                 pst5.executeUpdate();
@@ -357,6 +392,30 @@ public class Main {
         }
         return lost;
     }
+    public static void RecoveryRate() throws SQLException {
+        String sql1= "select count(*) from lostandfound";
+        String sql2 = "select count(*) from lostandfound where status ='Verified'";
+        Statement st1 = con.createStatement();
+        Statement st2 = con.createStatement();
+        ResultSet rs1 =  st1.executeQuery(sql1);
+        ResultSet rs2 =  st2.executeQuery(sql2);
+        float percent=0;
+        while (rs1.next()&& rs2.next()){
+            percent= (float) rs2.getInt(1) /rs1.getInt(1)*100f;
+        }
+        System.out.println("The chances of getting a lost item back using this system are "+percent+"%");
+    }
+
+    public static void lossHotspot() throws SQLException {
+        String sql = "select plocation,count(id) from lostandfound group by plocation order by count(id) desc";
+        PreparedStatement pst = con.prepareStatement(sql);
+        ResultSet rs = pst.executeQuery();
+        System.out.println("Location     No of lost Items");
+        while (rs.next()){
+            System.out.print(rs.getString(1)+"----->");
+            System.out.println(rs.getString(2));
+        }
+    }
     static void found() throws SQLException, FileNotFoundException {
         System.out.println("Kindly Enter the details of the thing you have found as instructed");
         System.out.println("Kindly enter the category in which item you found fits perfectly ");
@@ -403,7 +462,7 @@ public class Main {
             case 4:Documents d = new Documents();
                 d.setDetails();
                 int lid4 = insertDetails(d,"found");
-                PreparedStatement pst4 = con.prepareStatement("insert into Main.Documents values(?,?)");
+                PreparedStatement pst4 = con.prepareStatement("insert into Documents values(?,?)");
                 pst4.setInt(1,lid4);
                 pst4.setString(2,d.issueAuthority);
                 pst4.executeUpdate();
@@ -411,7 +470,7 @@ public class Main {
             case 5:AcademicSupplies s = new AcademicSupplies();
                 s.setDetails();
                 int lid5 = insertDetails(s,"found");
-                PreparedStatement pst5 = con.prepareStatement("insert into Main.AcademicSupplies values(?,?)");
+                PreparedStatement pst5 = con.prepareStatement("insert into AcademicSupplies values(?,?)");
                 pst5.setInt(1,lid5);
                 pst5.setString(2,s.brand);
                 pst5.executeUpdate();
@@ -456,7 +515,7 @@ public class Main {
                 found();
                 break;
         }
-        System.out.println("Thanks for reporting The lost Main.Item. We are thankful for your support. You will soon be rewarded for your efforts");
+        System.out.println("Thanks for reporting The lost Item. We are thankful for your support. You will soon be rewarded for your efforts");
     }
     public static String getSubjectInstance(Item subject){
         Map<Class<?>, Function<Object, String>> handlers = new HashMap<>();
@@ -579,7 +638,7 @@ public class Main {
                     }
                     returnable = list3;
                     break;
-                case "Main.AcademicSupplies":
+                case "AcademicSupplies":
                     DoublyLinkedList list4 =  new DoublyLinkedList();
                     String sql4 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -593,7 +652,7 @@ public class Main {
                             "FROM \n" +
                             "    LostAndfound l\n" +
                             "JOIN \n" +
-                            "    Main.AcademicSupplies e ON l.id = e.id\n" +
+                            "    AcademicSupplies e ON l.id = e.id\n" +
                             "WHERE \n" +
                             "    l.status = 'found'\n" +
                             "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
@@ -609,7 +668,7 @@ public class Main {
                     //needs improvement
                     returnable = list4;
                     break;
-                case "Main.Documents":
+                case "Documents":
                     DoublyLinkedList list5 =  new DoublyLinkedList();
                     String sql5 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -623,7 +682,7 @@ public class Main {
                             "FROM \n" +
                             "    LostAndfound l\n" +
                             "JOIN \n" +
-                            "    Main.Documents e ON l.id = e.id\n" +
+                            "    Documents e ON l.id = e.id\n" +
                             "WHERE \n" +
                             "    l.status = 'found'\n" +
                             "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
@@ -638,7 +697,7 @@ public class Main {
                     }
                     returnable = list5;
                     break;
-                case "Main.ChildStuff":
+                case "ChildStuff":
                     DoublyLinkedList list6 =  new DoublyLinkedList();
                     String sql6 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -697,7 +756,7 @@ public class Main {
                     }
                     returnable = list7;
                     break;
-                case "Main.eyeAndVision":
+                case "eyeAndVision":
                     DoublyLinkedList list8 =  new DoublyLinkedList();
                     String sql8 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -713,7 +772,7 @@ public class Main {
                             "FROM \n" +
                             "    LostAndfound l\n" +
                             "JOIN \n" +
-                            "    Main.eyeAndVision e ON l.id = e.id\n" +
+                            "    eyeAndVision e ON l.id = e.id\n" +
                             "WHERE \n" +
                             "    l.status = 'found'\n" +
                             "    AND l.date BETWEEN CURDATE() - INTERVAL 1 MONTH AND CURDATE();";
@@ -728,7 +787,7 @@ public class Main {
                     }
                     returnable = list8;
                     break;
-                case "Main.Keys":
+                case "Keys":
                     DoublyLinkedList list9 =  new DoublyLinkedList();
                     String sql9 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -777,8 +836,6 @@ public class Main {
             Admin a = new Admin();
             a.startProcedure();
         }
-        //Main.User Login-Main.User side function embedded in nested methods one after one in this method;
-
     }
 }
 

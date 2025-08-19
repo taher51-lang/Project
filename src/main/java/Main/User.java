@@ -34,7 +34,7 @@ public class User{
         while (Users.insert(username)){
             username=sc.next();
         }
-        System.out.println("Create new password(Minimun length 5)");
+        System.out.println("Create new password(Minimum length 5)");
         String pass = sc.next();
         String plainPassword = pass;
         String hashedPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());

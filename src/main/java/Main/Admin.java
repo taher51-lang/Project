@@ -89,42 +89,13 @@ public class Admin {
         }
     }
 
-    public void generateReport() {
+    public void generateReport() throws SQLException {
         System.out.println("Which report you would like to generate");
         System.out.println("1.Loss Hotspot Mapping\n2.Recovery Rate by Category\n3.Time-to-Recovery Metrics\n4.Back");
-        int choice = 0;
-        boolean param = true;
-        while (param) {
-            try {
-                choice = sc.nextInt();
-            }
-            catch (Exception e){
-                System.out.println("Enter numeric input");
-                continue;
-            }
-            switch (choice){
-                case 1:lossHotspot();
-                    break;
-                case 2: RecoveryRate();
-                    break;
-                case 3: RecoveryTime();
-                case 4:
-                    param=false;
-                    break;
-                default:
-                    System.out.println("Enter No between 1 and 3");
-            }
-        }
-
     }
 
-    private void RecoveryTime() {
-    }
+    public void RecoveryTime() {
 
-    private void RecoveryRate() {
-    }
-
-    private void lossHotspot() {
     }
 
     public void verificationProcess() throws SQLException, IOException {
