@@ -1,6 +1,11 @@
 import org.simmetrics.StringMetric;
 import org.simmetrics.metrics.JaroWinkler;
+
+import java.io.*;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -74,7 +79,7 @@ public class Main {
     static Item lost;
     static int id;
     static int Lid;
-    static boolean roleIdentification() throws SQLException, ClassNotFoundException {
+    static boolean roleIdentification() throws SQLException, ClassNotFoundException, FileNotFoundException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
         boolean adminOrUser = true;
@@ -164,11 +169,23 @@ public class Main {
         }
         return false;
     }
-    static void LostAndFoundProcess() throws SQLException {
-        System.out.println("Enter whether you have lost Or found any thing");
-        String circumstance=sc.next();
-        if(circumstance.equalsIgnoreCase("lost")){
-            Item subject = Lost();
+    static void LostAndFoundProcess() throws SQLException, FileNotFoundException {
+        System.out.println("Enter your choice from the following :");
+        System.out.println("1.Report lost item\n2.Report found item\n3.See Rewards\n4.See admin response\n5.Exit");
+        boolean checkInput = true;
+        int choice = 0;
+        while (checkInput){
+            try{
+                choice=sc.nextInt();
+            } 
+            catch (Exception e) {
+                System.out.println("Enter numeric input");
+                continue;
+            }
+            checkInput=false;
+        }
+        switch (choice){
+            case 1:  Item subject = Lost();
             DoublyLinkedList stage1 = search(subject);
             if(stage1==null){
                 System.out.println("No such Item detected. Kindly login again to proceed");
@@ -186,29 +203,63 @@ public class Main {
             }
             else{
                 System.out.println("No such item has been found");
+                System.out.println("Please scan again after some time");
             }
-        }
-        else{
-            found();
+            break;
+            case 2: found();
+            break;
+            case 3: seeRewards(id);break;
+            case 4:seeAdminResponse(id);
+            case 5:System.exit(0);
+            default:
+
+                System.out.println("Enter between 1 to 5");
+            break;
         }
     }
 
-    private static DoublyLinkedList filterAdditionals(DoublyLinkedList stage3, Item subject) {
+
+    public static void seeAdminResponse(int id) throws SQLException {
+        System.out.println("These are the responses from admin on all your requests");
+        PreparedStatement pst = con.prepareStatement("select adminresponse from lostandfound where uid = "+id);
+        ResultSet rs = pst.executeQuery();
+        while (rs.next()){
+            System.out.println(rs.getString(1));
+        }
+    }
+
+    public static void seeRewards(int id) throws SQLException {
+        PreparedStatement pst = con.prepareStatement("select rewards from user where userId = "+id);
+        ResultSet rs = pst.executeQuery();
+        while (rs.next())
+            System.out.println(rs.getString(1));
+    }
+
+    public static DoublyLinkedList filterAdditionals(DoublyLinkedList stage3, Item subject) {
         String result = getSubjectInstance(subject);
         return stage3.filterMoreAttributes(subject,result);
     }
 
-    static public int insertDetails(Item e,String status) throws SQLException {
+     public static int insertDetails(Item e,String status) throws SQLException, FileNotFoundException {
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
         String sql = "INSERT INTO Lostandfound(uid, name, area, date, color, attribute, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
          PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setInt(1, id);
             ps.setString(2, e.name);
             ps.setString(3, e.area);
-            ps.setString(4, e.date);
+            ps.setDate(4, Date.valueOf(e.date));
             ps.setString(5, e.color);
             ps.setString(6, e.attribute);
             ps.setString(7, status);
+            System.out.println("Do you have an image of the subject?Enter yes for uploading else press any key.");
+            String imageChoice = sc.next();
+            if(imageChoice.equalsIgnoreCase("yes")){
+                System.out.println("Enter the file path");
+                try{
+                ps.setBlob(8,new FileInputStream(sc.next()));} catch (FileNotFoundException ex) {
+                    System.out.println("Incorrect File path");
+                }
+            }
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
@@ -222,35 +273,35 @@ public class Main {
     public static void getItems(){
         System.out.println(
                 "1. Electronics & Gadgets"+
-                   "(Mobile phones, tablets, laptops, cameras, chargers, earphones etc)"+
+                   "(Mobile phones, tablets, laptops, cameras, chargers, earphones etc)\n"+
 
                 "2. Bags & Carriers"+
-                   "(Suitcases, backpacks, laptop bags, tote bags)"+
+                   "(Suitcases, backpacks, laptop bags, tote bags)\n"+
 
                "3. Clothing & Accessories"+
-                  " (Jackets, scarves, gloves, caps, jewelry, watches)"+
+                  " (Jackets, scarves, gloves, caps, jewelry, watches)\n"+
 
                 "4. Identity & Documents "+
-                   "(ID cards, passports, licenses, student cards, certificates)"+
+                   "(ID cards, passports, licenses, student cards, certificates)\n"+
 
                 "5. Academic Supplies"+
-                   "(Books, notebooks, stationery, calculators)"+
+                   "(Books, notebooks, stationery, calculators)\n"+
 
                 "6. Hobby & Entertainment Gear"+
-                 "  (Game consoles, musical instruments, sports equipment)"+
+                 "  (Game consoles, musical instruments, sports equipment)\n"+
 
                 ". Children’s Belongings"+
-                  " (Toys, lunch boxes, baby bags, pacifiers)"+
+                  " (Toys, lunch boxes, baby bags, pacifiers)\n"+
 
                 "8. Eyewear & Vision Aids"+
-                   "(Glasses, sunglasses, contact lens kits)"+
+                   "(Glasses, sunglasses, contact lens kits)\n"+
 
                 "9. Keys & Access Devices"+
-                   "(House keys, car keys, RFID tags, access cards)");
+                   "(House keys, car keys, RFID tags, access cards)\n");
 
 
     }
-    static Item Lost() throws SQLException {
+    static Item Lost() throws SQLException, FileNotFoundException {
         System.out.println("Kindly enter the category in which your lost item fits: ");
        getItems();
         int choice = 0;
@@ -367,7 +418,7 @@ public class Main {
         }
         return lost;
     }
-    static void found() throws SQLException {
+    static void found() throws SQLException, FileNotFoundException {
         System.out.println("Kindly Enter the details of the thing you have found as instructed");
         System.out.println("Kindly enter the category in which item you found fits perfectly ");
         getItems();
@@ -466,6 +517,7 @@ public class Main {
                 found();
                 break;
         }
+        System.out.println("Thanks for reporting The lost Item. We are thankful for your support. You will soon be rewarded for your efforts");
     }
     public static String getSubjectInstance(Item subject){
         Map<Class<?>, Function<Object, String>> handlers = new HashMap<>();
@@ -793,18 +845,21 @@ public class Main {
 class User{
     static Connection con;
     static Scanner sc = new Scanner(System.in);
+    public static boolean isEmailLike(String input) {
+        return input != null && input.contains("@");
+    }
     static void registration() throws ClassNotFoundException, SQLException {
         String driverName = "com.mysql.cj.jdbc.Driver";
         Class.forName(driverName);
         System.out.println("Driver installed");
-        String dbUrl = "jdbc:mysql://localhost:3306/project"; //changed part
+        String dbUrl = "jdbc:mysql://localhost:3306/Project"; //changed part
         String dbUser = "root";
         String dpPass = "";
         con = DriverManager.getConnection(dbUrl,dbUser,dpPass);
-        Tree Users = new Tree();
         String sql = "select user_name from user";
         PreparedStatement pst = con.prepareStatement(sql);
         ResultSet rs = pst.executeQuery();
+        Tree Users = new Tree();
         while (rs.next()){
             Users.insert(rs.getString(1));
         }
@@ -816,8 +871,17 @@ class User{
         while (Users.insert(username)){
             username=sc.next();
         }
-        System.out.println("Create new password");
+        System.out.println("Create new password(Minimun length 5)");
         String pass = sc.next();
+       while (true){
+           if (pass.length()>=5){
+               break;
+           }
+           else{
+               System.out.println("Enter password again");
+               pass=sc.next();
+           }
+       }
         System.out.println("Enter your mobile No(It must start with 8  or 9)");
         long mobileNo = 0;
         boolean temp=true;
@@ -837,9 +901,19 @@ class User{
         }
         System.out.println("Enter your email address");
         String email_id = sc.next();
+        while (!isEmailLike(email_id)){
+            System.out.println("Incorrect emailID");
+            email_id= sc.next();
+        }
         Statement st = con.createStatement();
-        String sql1 = "insert into user(user_name,Name,mobileNo,email_id,user_pass) values('"+username+"','"+Name+"',"+mobileNo+",'"+email_id+"','"+pass+"')";
-        st.executeUpdate(sql1);
+        String sql1 = "INSERT INTO user(user_name, Name, mobileNo, email_id, user_pass) VALUES (?, ?, ?, ?, ?)";
+        PreparedStatement stmt = con.prepareStatement(sql1);
+        stmt.setString(1, username);
+        stmt.setString(2, Name);
+        stmt.setLong(3, mobileNo);
+        stmt.setString(4, email_id);
+        stmt.setString(5, pass);
+        stmt.executeUpdate();
         String sql2="Select userId,name from user where user_Name='"+username+"'";
         Statement st2 = con.createStatement();
         ResultSet rs2= st2.executeQuery(sql2);
@@ -851,7 +925,7 @@ class Item {
     Scanner sc = new Scanner(System.in);
     String name;
     String area;
-    String date;
+    LocalDate date;
     String color;
     String attribute;
     public void setName() {
@@ -863,13 +937,22 @@ class Item {
         area = sc.nextLine();
     }
     public void setDate() {
-        System.out.println("Enter the date when it got lost/found");
-        try {
-            date = sc.nextLine();
-        } catch (Exception e) {
-            System.out.println("enter proper date");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        while (true) {
+            System.out.print("Enter the date when it got lost/found (yyyy-MM-dd): ");
+            String input = sc.nextLine().trim();
+
+            try {
+                date = LocalDate.parse(input, formatter);
+                System.out.println("You entered: " + date);
+                break; // Exit loop once valid date is entered
+            } catch (DateTimeParseException e) {
+                System.out.println("❌ Invalid format. Please use yyyy-MM-dd (e.g., 2025-08-18).");
+            }
         }
     }
+
     public void setColor() {
         System.out.println("Enter the color of the lost/found thing");
         color = sc.nextLine();
@@ -890,6 +973,7 @@ class Electronics extends Item{
         brand = sc.nextLine();
     }
    public void setDetails(){
+       System.out.println("Enter the device category(e.g Laptop, Mobile , Power bank etc) ");
        setName();setDate();setArea();setBrand();setColor();
        System.out.println("Enter the model of the electronic device e.g(Dell series laptop:Inspiron 3511)");
        model=sc.nextLine();
@@ -1150,12 +1234,12 @@ class DoublyLinkedList{
     }
 
     public void setAdminVerification(int lid,int LostUserID) throws SQLException {
-        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
+        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/Project", "root", "");
         Node temp = first;
         while (temp!=null){
             int id = Integer.parseInt(temp.record.get("Id"));
            String sql1 = "update lostAndFound set status = 'Under Verification' where id = "+id;
-           String sql2 = "update lostAndFound set status = 'Under Verification' where id = "+lid;
+           String sql2 = "update lostAndFound set status = 'Under Verification' wheremain id = "+lid;
             String sql3 = "INSERT INTO adminverification(lostUserID, lostId, foundUserID, fid, status) VALUES ("
                     + LostUserID + ", "
                     + lid + ", "
@@ -1165,9 +1249,8 @@ class DoublyLinkedList{
            Statement st = con.createStatement();
            int r1 = st.executeUpdate(sql1);
            int r2 = st.executeUpdate(sql2);
-            System.out.println("cleared till here");
            int r3 = st.executeUpdate(sql3);
-           if(r1>0&&r2>0)
+           if(r1>0&&r2>0&&r3>0)
                System.out.println("Status updated");
         }
     }
@@ -1215,9 +1298,9 @@ class Admin {
     Connection con;
     Scanner sc = new Scanner(System.in);
     Admin() throws SQLException {
-        con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
+        con = DriverManager.getConnection("jdbc:mysql://localhost:3306/Project", "root", "");
     }
-    public void startProcedure() throws SQLException {
+    public void startProcedure() throws SQLException, IOException {
         Scanner sc = new Scanner(System.in);
         boolean loginCheck = true;
 
@@ -1235,7 +1318,7 @@ class Admin {
                         System.out.println("System password verified. Proceeding with registration...");
                         adminregistration();
                         loginCheck = false;
-                        VerificationProcess();
+                        selectFromChoice();
                     } else {
                         System.out.println("Incorrect system password. Access denied.");
                     }
@@ -1248,7 +1331,7 @@ class Admin {
                         if (success) {
                             System.out.println("Welcome back, admin.");
                             loginCheck = false;
-                            VerificationProcess();
+                            selectFromChoice();
                             break;
                         } else {
                             System.out.println("Login failed. Try again.");
@@ -1261,25 +1344,59 @@ class Admin {
             }
         }
     }
-    public void VerificationProcess() throws SQLException {
+
+     void selectFromChoice() throws SQLException, IOException {
+        System.out.println("Enter your choice from the following");
+        System.out.println("1.Verify and Analyse requests\n2.Generate and see Analysis report\n3.Exit");
+        int choice = 0;
+        boolean param = true;
+        while (param) {
+            try {
+                choice = sc.nextInt();
+            }
+            catch (Exception e){
+                System.out.println("Enter numeric input");
+                continue;
+            }
+            switch (choice){
+                case 1:verificationProcess();
+                    break;
+                case 2: generateReport();
+                    break;
+                case 3: System.exit(0);
+                default:
+                    System.out.println("Enter No between 1 and 3");
+                    continue;
+            }
+            param=false;
+        }
+    }
+
+    public void generateReport() {
+
+    }
+
+    public void verificationProcess() throws SQLException, IOException {
         System.out.println("Match The attributes of Lost User and Found User and make your decision");
         String sql ="select * from adminverification";
         Statement st = con.createStatement();
         ResultSet rs5 = st.executeQuery(sql);
+        ResultSetMetaData rsmd = rs5.getMetaData();
         int lostId,foundId,lostUserId,foundUserId;
         while (rs5.next()) {
             lostId = rs5.getInt(3);
             foundId = rs5.getInt(5);
             lostUserId = rs5.getInt(2);
             foundUserId = rs5.getInt(4);
-
+            System.out.println(rsmd.getColumnName(2) +"  "+rsmd.getColumnName(3)+"  "+rsmd.getColumnName(4)+"  "+rsmd.getColumnName(4));
+            System.out.println(lostUserId+"  "+lostId+"  "+foundUserId+"  "+foundId);
             System.out.println("Do you want to verify this request?Enter yes if you wish to proceed else press any key for other requests");
             String circumstance = sc.next();
             if (circumstance.equalsIgnoreCase("yes")) {
                 Statement st1 = con.createStatement();
                 Statement st2 = con.createStatement();
-                String sql1 = "select attribute from lostandfound where id = " + lostId;
-                String sql2 = "select * from lostandfound where id = " + foundId;
+                String sql1 = "select attribute,image from lostandfound where id = " + lostId;
+                String sql2 = "select attribute,image from lostandfound where id = " + foundId;
                 ResultSet rs1 = st1.executeQuery(sql1);
                 ResultSet rs2 = st2.executeQuery(sql2);
                 while (rs1.next() && rs2.next()) {
@@ -1287,6 +1404,19 @@ class Admin {
                     System.out.println(rs1.getString(1));
                     System.out.println("These are the details given by user who has found the item:");
                     System.out.println(rs2.getString(1));
+                        Blob i1 = rs1.getBlob(2);
+                        Blob  i2= rs1.getBlob(2);
+                        if(i1!=null&&i2!=null){
+                        byte[] arr1 = i1.getBytes(1, (int) i1.length());
+                        byte[] arr2 = i2.getBytes(1, (int) i2.length());
+                        FileOutputStream fos1 = new FileOutputStream("D://" + "user1" + ".jpg");
+                        FileOutputStream fos2 = new FileOutputStream("D://" + "user2" + ".jpg");
+                        fos1.write(arr1);
+                        fos2.write(arr2);
+                        fos1.close();
+                        fos2.close();
+                    System.out.println("Images from both the users has been downloaded. Please analyse both");
+                        }
                     System.out.println("Kindly make a decision. Press 1 to verify and 2 for denial ");
                     int choice;
                     while (true) {
@@ -1295,7 +1425,6 @@ class Admin {
                             break;
                         } catch (Exception e) {
                             System.out.println("Improper input. Try again");
-                            sc.next();
                         }
                     }
                     if (choice == 1) {
