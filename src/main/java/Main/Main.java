@@ -620,6 +620,8 @@ public class Main {
                         list2.insertAtLast(records);
                         System.out.println("S3 clear");
                     }
+
+
                     returnable = list2;
                     break;
                 case "Main.Accessories":

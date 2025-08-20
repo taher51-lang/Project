@@ -38,7 +38,6 @@ public class User{
         String pass = sc.next();
         String plainPassword = pass;
         String hashedPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
-
         while (true){
             if (pass.length()>=5){
                 break;

@@ -125,7 +125,7 @@ public class Admin {
                         fos2.write(arr2);
                         fos1.close();
                         fos2.close();
-                        System.out.println("Images from both the users has been downloaded. Please analyse both");
+                        System.out.println("Images from both the users has been downloaded. Please analyze both");
                     }
                     System.out.println("Kindly make a decision. Press 1 to verify and 2 for denial ");
                     int choice;
@@ -142,9 +142,10 @@ public class Admin {
                         PreparedStatement pst2 = con.prepareStatement("update lostandfound set status = 'Verified' where id = " + foundId);
                         pst2.executeUpdate();
                         pst1.executeUpdate();
-                        CallableStatement cst = con.prepareCall("call afterVerification(?,?)");
+                        CallableStatement cst = con.prepareCall("call afterVerification(?,?,?)");
                         cst.setInt(1,lostUserId);
                         cst.setInt(2,foundUserId);
+                        cst.setInt(3,foundId);
                         cst.executeUpdate();
                     }
                     else{
