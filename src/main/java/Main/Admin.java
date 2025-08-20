@@ -64,7 +64,7 @@ public class Admin {
 
     void selectFromChoice() throws SQLException, IOException {
         System.out.println("Enter your choice from the following");
-        System.out.println("1.Verify and Analyse requests\n2.Generate and see Analysis report\n3.Exit");
+        System.out.println("1.Verify and Analyse requests\n2.Exit");
         int choice = 0;
         boolean param = true;
         while (param) {
@@ -78,29 +78,17 @@ public class Admin {
             switch (choice){
                 case 1:verificationProcess();
                     break;
-                case 2: generateReport();
-                    break;
-                case 3: System.exit(0);
+                case 2: System.exit(0);break;
                 default:
-                    System.out.println("Enter No between 1 and 3");
+                    System.out.println("Enter No between 1 and 2");
                     continue;
             }
             param=false;
         }
     }
-
-    public void generateReport() throws SQLException {
-        System.out.println("Which report you would like to generate");
-        System.out.println("1.Loss Hotspot Mapping\n2.Recovery Rate by Category\n3.Time-to-Recovery Metrics\n4.Back");
-    }
-
-    public void RecoveryTime() {
-
-    }
-
     public void verificationProcess() throws SQLException, IOException {
-        System.out.println("Match The attributes of Lost Main.User and Found Main.User and make your decision");
-        String sql ="select * from adminverification";
+        System.out.println("Match The attributes of Lost User and Found User and make your decision");
+        String sql ="select * from adminverification where status = 'Pending'";
         Statement st = con.createStatement();
         ResultSet rs5 = st.executeQuery(sql);
         ResultSetMetaData rsmd = rs5.getMetaData();
@@ -131,8 +119,8 @@ public class Admin {
                     if(i1!=null&&i2!=null){
                         byte[] arr1 = i1.getBytes(1, (int) i1.length());
                         byte[] arr2 = i2.getBytes(1, (int) i2.length());
-                        FileOutputStream fos1 = new FileOutputStream("D://" + "user1" + ".jpg");
-                        FileOutputStream fos2 = new FileOutputStream("D://" + "user2" + ".jpg");
+                        FileOutputStream fos1 = new FileOutputStream("C:\\Users\\rangw\\OneDrive\\Pictures\\Screenshots\\userlost");
+                        FileOutputStream fos2 = new FileOutputStream("C:\\Users\\rangw\\OneDrive\\Pictures\\Screenshots\\userfound");
                         fos1.write(arr1);
                         fos2.write(arr2);
                         fos1.close();
@@ -155,6 +143,12 @@ public class Admin {
                         pst2.executeUpdate();
                         pst1.executeUpdate();
                         CallableStatement cst = con.prepareCall("call afterVerification(?,?)");
+                        cst.setInt(1,lostUserId);
+                        cst.setInt(2,foundUserId);
+                        cst.executeUpdate();
+                    }
+                    else{
+                        CallableStatement cst = con.prepareCall("call afterRejection(?,?)");
                         cst.setInt(1,lostUserId);
                         cst.setInt(2,foundUserId);
                         cst.executeUpdate();

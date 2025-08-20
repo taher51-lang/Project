@@ -25,7 +25,8 @@ public class Main {
             try {
                 role = Integer.parseInt(sc.next());
                 condition1=false;
-            } catch (NumberFormatException e) {
+            }
+            catch (NumberFormatException e) {
                 System.out.println("---Kindly enter proper numeric input---");
             }
         }
@@ -124,15 +125,21 @@ public class Main {
             switch (choice) {
                 case 1:
                     Item subject = Lost();
+                    CallableStatement cs =con.prepareCall("call flagSuspiciousUser(?)");
+                    cs.setInt(1,id);
+                    cs.executeUpdate();
                     DoublyLinkedList stage1 = search(subject);
                     if (stage1 == null) {
                         System.out.println("No such Item detected. Kindly login again to proceed");
                         System.exit(0);
                     }
-                    stage1.display();
-                    DoublyLinkedList stage2 = filterName_location_color(stage1, subject);//Name and location and color
+
+//                    stage1.display();
+                    DoublyLinkedList stage2 = filterName_location_color(stage1, subject);
+//                    stage2.display();//Name and location and color
                     DoublyLinkedList stage3 = filterAdditionals(stage2, subject);
-                    if (stage3.exists()) {
+//                    stage3.display();
+                    if (stage3.first!=null) {
                         stage3.display();
                         System.out.println("We have found a Match in accordance to your Specifications.");
                         System.out.println("Your request is in Admin verification and you may get contacted for more details via email.");
@@ -209,12 +216,13 @@ public class Main {
 
     public static DoublyLinkedList filterAdditionals(DoublyLinkedList stage3, Item subject) {
         String result = getSubjectInstance(subject);
+        System.out.println(result);
         return stage3.filterMoreAttributes(subject,result);
     }
 
      public static int insertDetails(Item e,String status) throws SQLException, FileNotFoundException {
         con = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "");
-        String sql = "INSERT INTO Lostandfound(uid, name, area, date, color, attribute, status, plocation) VALUES (?, ?, ?, ?, ?, ?, ?,?)";
+        String sql = "INSERT INTO Lostandfound(uid, name, area, date, color, attribute, status, plocation,image) VALUES (?, ?, ?, ?, ?, ?, ?,?,?)";
          PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
          String location[] = e.area.split(",");
             ps.setInt(1, id);
@@ -227,12 +235,17 @@ public class Main {
             ps.setString(8, location[location.length-1]);
             System.out.println("Do you have an image of the subject?Enter yes for uploading else press any key.");
             String imageChoice = sc.next();
+            sc.nextLine();
             if(imageChoice.equalsIgnoreCase("yes")){
                 System.out.println("Enter the file path");
                 try{
-                ps.setBlob(8,new FileInputStream(sc.next()));} catch (FileNotFoundException ex) {
-                    System.out.println("Incorrect File path");
+                ps.setBlob(9,new FileInputStream(sc.nextLine()));
+                } catch (FileNotFoundException ex) {
+                    System.out.println(ex.getMessage());
                 }
+            }
+            else{
+                ps.setBlob(9, (Blob) null);
             }
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -246,16 +259,16 @@ public class Main {
     }
     public static void getItems(){
         System.out.println(
-                "1. Main.Electronics & Gadgets"+
+                "1. Electronics & Gadgets"+
                    "(Mobile phones, tablets, laptops, cameras, chargers, earphones etc)\n"+
 
-                "2. Main.Bags & Carriers"+
+                "2. Bags & Carriers"+
                    "(Suitcases, backpacks, laptop bags, tote bags)\n"+
 
-               "3. Clothing & Main.Accessories"+
+               "3. Clothing & Accessories"+
                   " (Jackets, scarves, gloves, caps, jewelry, watches)\n"+
 
-                "4. Identity & Main.Documents "+
+                "4. Identity & Documents "+
                    "(ID cards, passports, licenses, student cards, certificates)\n"+
 
                 "5. Academic Supplies"+
@@ -264,7 +277,7 @@ public class Main {
                 "6. Hobby & Entertainment Gear"+
                  "  (Game consoles, musical instruments, sports equipment)\n"+
 
-                ". Children’s Belongings"+
+                "7. Children’s Belongings"+
                   " (Toys, lunch boxes, baby bags, pacifiers)\n"+
 
                 "8. Eyewear & Vision Aids"+
@@ -504,7 +517,7 @@ public class Main {
             case 9:Keys k = new Keys();
                 k.setDetails();
                 int lid9 = insertDetails(k,"found");
-                PreparedStatement pst9 = con.prepareStatement("insert into Keyaccess values(?,?,?)");
+                PreparedStatement pst9 = con.prepareStatement("insert into Keys values(?,?,?)");
                 pst9.setInt(1,lid9);
                 pst9.setString(2,k.keyType);
                 pst9.setString(3,k.brand);
@@ -638,7 +651,7 @@ public class Main {
                     }
                     returnable = list3;
                     break;
-                case "AcademicSupplies":
+                case "Main.AcademicSupplies":
                     DoublyLinkedList list4 =  new DoublyLinkedList();
                     String sql4 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -668,7 +681,7 @@ public class Main {
                     //needs improvement
                     returnable = list4;
                     break;
-                case "Documents":
+                case "Main.Documents":
                     DoublyLinkedList list5 =  new DoublyLinkedList();
                     String sql5 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -697,7 +710,7 @@ public class Main {
                     }
                     returnable = list5;
                     break;
-                case "ChildStuff":
+                case "Main.ChildStuff":
                     DoublyLinkedList list6 =  new DoublyLinkedList();
                     String sql6 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -709,7 +722,7 @@ public class Main {
                             "    l.attribute, \n" +
                             "    e.Brand\n" +
                             "FROM \n" +
-                            "    LostAndfound l\n" +
+                            "    lostAndfound l\n" +
                             "JOIN \n" +
                             "    Childstuff e ON l.id = e.id\n" +
                             "WHERE \n" +
@@ -727,7 +740,7 @@ public class Main {
                     }
                     returnable = list6;
                     break;
-                case "EntertainmentGears":
+                case "Main.EntertainmentGears":
                     DoublyLinkedList list7 =  new DoublyLinkedList();
                     String sql7 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -756,7 +769,7 @@ public class Main {
                     }
                     returnable = list7;
                     break;
-                case "eyeAndVision":
+                case "Main.eyeAndVision":
                     DoublyLinkedList list8 =  new DoublyLinkedList();
                     String sql8 = "SELECT \n" +
                             "    l.uid, \n" +
@@ -787,7 +800,7 @@ public class Main {
                     }
                     returnable = list8;
                     break;
-                case "Keys":
+                case "Main.Keys":
                     DoublyLinkedList list9 =  new DoublyLinkedList();
                     String sql9 = "SELECT \n" +
                             "    l.uid, \n" +

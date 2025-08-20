@@ -34,7 +34,7 @@ public class DoublyLinkedList{
         DoublyLinkedList finalFilter = new DoublyLinkedList();
         while (temp!=null){
             switch (result.toLowerCase()) {
-                case "electronics":
+                case "main.electronics":
                     Electronics e = (Electronics) subject;
                     float brandScore1 = match.compare(e.brand,temp.record.get("brand"));
                     float modelScore = match.compare(e.model,temp.record.get("model"));
@@ -42,7 +42,7 @@ public class DoublyLinkedList{
                         finalFilter.insertAtLast(temp.record);
                     }
                     break;
-                case "bags":
+                case "main.bags":
                     Bags b = (Bags) subject;
                     System.out.println(b.brand);
                     float MaterialScore = match.compare(b.material,temp.record.get("material"));
@@ -51,42 +51,42 @@ public class DoublyLinkedList{
                         finalFilter.insertAtLast(temp.record);
                     }
                     break;
-                case "accessories":
+                case "main.accessories":
                     Accessories ac = (Accessories) subject;
                     float brandScore3 = match.compare(ac.brand,temp.record.get("brand"));
                     if(brandScore3>0.65){
                         finalFilter.insertAtLast(temp.record);
                     }
                     break;
-                case "childstuff":
+                case "main.childstuff":
                     ChildStuff ch = (ChildStuff) subject;
                     float brandScore4 = match.compare(ch.brand,temp.record.get("brand"));
                     if(brandScore4>0.65){
                         finalFilter.insertAtLast(temp.record);
                     }
                     break;
-                case "academicsupplies":
+                case "main.academicsupplies":
                     AcademicSupplies as = (AcademicSupplies) subject;
                     float brandScore5 = match.compare(as.brand,temp.record.get("brand"));
                     if(brandScore5>0.65){
                         finalFilter.insertAtLast(temp.record);
                     }
                     break;
-                case "entertainmentgears":
+                case "main.entertainmentgears":
                     EntertainmentsGears et = (EntertainmentsGears) subject;
                     float brandScore6 = match.compare(et.brand,temp.record.get("brand"));
                     if(brandScore6>0.65){
                         finalFilter.insertAtLast(temp.record);
                     }
                     break;
-                case "keys":
+                case "main.keys":
                     Keys k = (Keys) subject;
                     float keyScore = match.compare(k.keyType,temp.record.get("keytype"));
                     float brandscore7 = match.compare(k.brand,temp.record.get("brand"));
                     if((brandscore7+keyScore)>=1.3)
                         finalFilter.insertAtLast(temp.record);
                     break;
-                case "eyeandvision":
+                case "main.eyeandvision":
                     eyeAndVision ev = (eyeAndVision) subject;
                     float frameScore = match.compare(ev.FrameType,temp.record.get("frametype"));
                     float lensScore = match.compare(ev.lensGrade,temp.record.get("lensgrade"));
@@ -94,7 +94,7 @@ public class DoublyLinkedList{
                     if((frameScore+lensScore+brandScore8)>=1.95)
                         finalFilter.insertAtLast(temp.record);
                     break;
-                case "documents":
+                case "main.documents":
                     Documents d = (Documents) subject;
                     float isScore = match.compare(d.issueAuthority,temp.record.get("issueauthority"));
                     if(isScore>0.65)
@@ -116,7 +116,7 @@ public class DoublyLinkedList{
         while (temp!=null){
             int id = Integer.parseInt(temp.record.get("Id"));
             String sql1 = "update lostAndFound set status = 'Under Verification' where id = "+id;
-            String sql2 = "update lostAndFound set status = 'Under Verification' wheremain id = "+lid;
+            String sql2 = "update lostAndFound set status = 'Under Verification' where id = "+lid;
             String sql3 = "INSERT INTO adminverification(lostUserID, lostId, foundUserID, fid, status) VALUES ("
                     + LostUserID + ", "
                     + lid + ", "
@@ -158,7 +158,6 @@ public class DoublyLinkedList{
     }
     public void display(){
         Node temp = first;
-        System.out.println(first);
         while (temp!=null){
             System.out.println(temp.record);
             temp=temp.next;
